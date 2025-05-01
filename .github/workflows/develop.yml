@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - 'feature/**'
+      - feature
 
 jobs:
   devskim:
@@ -200,9 +201,10 @@ jobs:
       - name: Merge naar development
         if: success()
         run: |
+          short_sha=$(echo "${{ github.sha }}" | cut -c1-7)
           git fetch origin
           git checkout development
-          git merge --no-ff origin/${{ github.ref_name }} -m "✅ Auto-merge from ${{ github.ref_name }} (commit ${{ github.sha:0:7 }}) on $(date -u '+%Y-%m-%d')"
+          git merge --no-ff origin/${{ github.ref_name }} -m "✅ Auto-merge from ${{ github.ref_name }} (commit $short_sha) on $(date -u '+%Y-%m-%d')"
           git push origin development
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

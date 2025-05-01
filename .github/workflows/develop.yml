@@ -32,7 +32,6 @@ jobs:
       - name: Run html-validate
         run: |
           html-validate "**/*.html" "**/*.htm" > html-validate-report.txt || true
-          html-validate "**/*.html" --format sarif > html-validate-results.sarif
 
   stylelint:
     name: Stylelint

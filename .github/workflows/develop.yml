@@ -4,7 +4,7 @@ name: Push feature naar development
 on:
   push:
     branches:
-      - development
+      - 'feature/**'
 
 jobs:
   devskim:
@@ -19,49 +19,56 @@ jobs:
 
   html-validate:
     name: HTML Validate
+    needs: [devskim]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install html-validate
-        run: |
-          npm install -g html-validate
+        run: npm install -g html-validate
 
       - name: Run html-validate
         run: |
           html-validate "**/*.html" "**/*.htm" > html-validate-report.txt || true
-          html-validate "**/*.html" --format sarif > html-validate-results.sarif 
+          html-validate "**/*.html" --format sarif > html-validate-results.sarif
 
   stylelint:
-    name: Stylelint CSS Linter
+    name: Stylelint
+    needs: [devskim]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install Stylelint
         run: npm install stylelint stylelint-config-standard
-        # npm init stylelint
 
       - name: Run Stylelint
         run: npx stylelint "**/*.css" "**/*.scss" "**/*.js" > stylelint-report.txt || true
 
   eslint:
-    name: ESLint JavaScript Linter
+    name: ESLint
+    needs: [devskim]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install ESLint
         run: npm install eslint
-        # npm init @eslint/config@latest
 
       - name: Run ESLint
         run: npx eslint "**/*.js" > eslint-report.txt || true
 
   phpcs:
     name: PHP Code Sniffer
+    needs: [devskim]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Install PHP_CodeSniffer
         run: composer global require "squizlabs/php_codesniffer=*"
 
@@ -69,70 +76,63 @@ jobs:
         run: ~/.composer/vendor/bin/phpcs --standard=PSR12 . > phpcs-report.txt || true
 
   logs:
-    name: Logs
+    name: Reports
     runs-on: ubuntu-latest
-    needs: [ devskim, html-validate, stylelint, eslint, phpcs ]
+    needs: [devskim, html-validate, stylelint, eslint, phpcs]
     steps:
-      - name: Print log from DevSkim
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: DevSkim Results Report
         run: |
-          echo "---- DevSkim SARIF Result ----"
-          cat devskim-results.sarif || echo "SARIF file not found"
+          echo "---- DevSkim SARIF Report Result ----"
+          test -f devskim-results.sarif  && cat devskim-results.sarif  || echo "file not found"
           echo "---- -------------------- ----"
 
-      - name: Print log van Html-validate
+      - name: HTML-validate Results Report
         run: |
           echo "---- HTML-validate Report Result ----"
           cat html-validate-report.txt || echo "TXT file not found"
+          test -f html-validate-report.txt && cat somefile || echo "file not found"
           echo "---- -------------------- ----"
 
-      - name: Print log from Stylelint
+      - name: Stylelint Results Report
         run: |
           echo "---- Stylelint Report Result ----"
           cat stylelint-report.txt || echo "TXT file not found"
           echo "---- -------------------- ----"
 
-      - name: Print log from Eslint
+      - name: Eslint Results Report
         run: |
           echo "---- Eslint Report Result ----"
           cat eslint-report.txt || echo "TXT file not found"
-          echo "---- -------------------- ----"
+          echo "---- -------------------- ----"  
 
-      - name: Print log from PHPCS
+      - name: PHP Code Sniffer Results Report
         run: |
           echo "---- PHP Code Sniffer Report Result ----"
           cat phpcs-report.txt || echo "TXT file not found"
           echo "---- -------------------- ----"
 
-  artifacts:
-    devskim:
-      name: Upload DevSkim SARIF as artifact
-      runs-on: ubuntu-latest
-      needs: [devskim]
-      steps:
-        - uses: actions/checkout@v4
-        - uses: actions/upload-artifact@v3
-          name: devskim-sarif
-          path: devskim-results.sarif
-
-    linters:
-      name: Upload Linter logs as artifact
-      runs-on: ubuntu-latest
-      needs: [html-validate, stylelint, eslint, phpcs]
-      steps:
-        - uses: actions/checkout@v4
-        - uses: actions/upload-artifact@v3
-          name: linter-reports
-          path: |
-            html-validate-report.txt
-            stylelint-report.txt
-            eslint-report.txt
-            phpcs-report.txt
-
   errors:
     name: Foutcontrole op linter logs
     runs-on: ubuntu-latest
-    needs: [html-validate, stylelint, eslint, phpcs]
+    needs: [devskim, html-validate, stylelint, eslint, phpcs]
     steps:
+      - name: Controleer op DevSkim errors
+        run: |
+          if [ -f devskim-results.sarif ]; then
+            ERRORS=$(jq '.runs[].results[] | select(.level == "error")' devskim-results.sarif | wc -l)
+            if [ "$ERRORS" -gt 0 ]; then
+              echo "❌ DevSkim vond $ERRORS fouten (level = error)"
+              exit 1
+            else
+              echo "✅ Geen DevSkim fouten met level 'error' gevonden."
+            fi
+          else
+            echo "⚠️ Geen devskim-results.sarif bestand gevonden. Controle overgeslagen."
+          fi
+
       - name: Foutcontrole HTML Validate
         run: |
           if grep -Ei "(Fatal error|Uncaught exception|syntax error)" html-validate-report.txt; then
@@ -160,3 +160,49 @@ jobs:
             echo "❌ Fatale fout gevonden in PHPCS output"
             exit 1
           fi
+
+  artifacts:
+    name: Upload Artifacts
+    runs-on: ubuntu-latest
+    needs: [devskim, html-validate, stylelint, eslint, phpcs, errors]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload DevSkim SARIF
+        uses: actions/upload-artifact@v3
+        with:
+          name: devskim-sarif
+          path: devskim-results.sarif
+
+      - name: Upload Linter logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: linter-reports
+          path: |
+            html-validate-report.txt
+            stylelint-report.txt
+            eslint-report.txt
+            phpcs-report.txt
+
+  test-and-push:
+    name: Merge naar development na lint checks
+    runs-on: ubuntu-latest
+    needs: [devskim, html-validate, stylelint, eslint, phpcs, errors]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge naar development
+        if: success()
+        run: |
+          git fetch origin
+          git checkout development
+          git merge --no-ff origin/${{ github.ref_name }} -m "✅ Auto-merge from ${{ github.ref_name }} (commit ${{ github.sha:0:7 }}) on $(date -u '+%Y-%m-%d')"
+          git push origin development
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

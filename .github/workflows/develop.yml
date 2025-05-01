@@ -69,31 +69,35 @@ jobs:
         run: ~/.composer/vendor/bin/phpcs --standard=PSR12 . > phpcs-report.txt || true
 
   logs:
-    - name: Print log from DevSkim
-      run: |
-        echo "---- DevSkim SARIF Result ----"
-        cat devskim-results.sarif || echo "SARIF file not found"
-        echo "---- -------------------- ----"
+    name: Log Outputs
+    runs-on: ubuntu-latest
+    needs: [ devskim, html-validate, stylelint, eslint, phpcs ]
+    steps:
+      - name: Print log from DevSkim
+        run: |
+          echo "---- DevSkim SARIF Result ----"
+          cat devskim-results.sarif || echo "SARIF file not found"
+          echo "---- -------------------- ----"
 
-    - name: Print log van Html-validate
-      run: |
-        echo "---- HTML-validate Report Result ----"
-        cat html-validate-report.txt || echo "TXT file not found"
-        echo "---- -------------------- ----"
+      - name: Print log van Html-validate
+        run: |
+          echo "---- HTML-validate Report Result ----"
+          cat html-validate-report.txt || echo "TXT file not found"
+          echo "---- -------------------- ----"
 
-    - name: Print log from Stylelint
-      run: |
-        echo "---- Stylelint Report Result ----"
-        cat stylelint-report.txt || echo "TXT file not found"
-        echo "---- -------------------- ----"
+      - name: Print log from Stylelint
+        run: |
+          echo "---- Stylelint Report Result ----"
+          cat stylelint-report.txt || echo "TXT file not found"
+          echo "---- -------------------- ----"
 
-    - name: Print log from Eslint
-      run: |
-        echo "---- Eslint Report Result ----"
-        cat eslint-report.txt || echo "TXT file not found"
-        echo "---- -------------------- ----"
+      - name: Print log from Eslint
+        run: |
+          echo "---- Eslint Report Result ----"
+          cat eslint-report.txt || echo "TXT file not found"
+          echo "---- -------------------- ----"
 
-    - name:
+      - name: Print log from PHPCS
         run: |
           echo "---- PHP Code Sniffer Report Result ----"
           cat phpcs-report.txt || echo "TXT file not found"

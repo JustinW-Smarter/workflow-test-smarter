@@ -207,6 +207,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Rebase feature branch op development
+        run: |
+          git fetch origin
+          git checkout ${{ github.ref_name }}
+          git rebase origin/development
+
       - name: Merge naar development
         if: success()
         run: |

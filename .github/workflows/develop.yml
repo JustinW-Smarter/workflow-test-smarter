@@ -212,8 +212,9 @@ jobs:
 
       - name: Merge feature into development
         run: |
-          git checkout development
-                    git merge ${{ github.ref_name }} --no-ff --no-edit --allow-unrelated-histories || {
+          git fetch origin
+          git checkout -B development origin/development
+          git merge ${{ github.ref_name }} --no-ff --no-edit || {
             echo "Conflict bij merge naar development";
             exit 1;
           }

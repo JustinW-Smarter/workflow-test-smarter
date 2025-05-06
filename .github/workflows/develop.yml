@@ -1,0 +1,246 @@
+# Feature -> Development Branch
+name: Push feature naar development
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - feature
+
+jobs:
+  devskim:
+    name: DevSkim Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run DevSkim
+        uses: microsoft/DevSkim-Action@v1
+
+  html-validate:
+    name: HTML Validate
+    needs: [devskim]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install html-validate
+        run: npm install -g html-validate
+
+      - name: Run html-validate
+        run: |
+          html-validate "**/*.html" "**/*.htm" > html-validate-report.txt || true
+          [ -s html-validate-report.txt ] || echo "No HTML issues found." > html-validate-report.txt
+
+  stylelint:
+    name: Stylelint
+    needs: [devskim]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Stylelint
+        run: npm install stylelint stylelint-config-standard
+
+      - name: Run Stylelint
+        run: |
+          npx stylelint "**/*.css" "**/*.scss" "**/*.js" > stylelint-report.txt || true
+          [ -s stylelint-report.txt ] || echo "No CSS issues found." > stylelint-report.txt
+
+  eslint:
+    name: ESLint
+    needs: [devskim]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install ESLint
+        run: npm install eslint
+
+      - name: Run ESLint
+        run: |
+          npx eslint "**/*.js" > eslint-report.txt || true
+          [ -s eslint-report.txt ] || echo "No Javascript issues found." > eslint-report.txt
+
+  phpcs:
+    name: PHP Code Sniffer
+    needs: [devskim]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install PHP_CodeSniffer
+        run: composer global require "squizlabs/php_codesniffer=*"
+
+      - name: Run PHPCS
+        run: |
+          ~/.composer/vendor/bin/phpcs --standard=PSR12 . > phpcs-report.txt || true
+          [ -s phpcs-report.txt ] || echo "No PHPCS issues found." > phpcs-report.txt
+
+  logs:
+    name: Reports
+    runs-on: ubuntu-latest
+    needs: [devskim, html-validate, stylelint, eslint, phpcs]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: DevSkim Results Report
+        run: |
+          echo "---- DevSkim SARIF Report Result ----"
+          test -f devskim-results.sarif  && cat devskim-results.sarif  || echo "file not found"
+          echo "---- -------------------- ----"
+
+      - name: HTML-validate Results Report
+        run: |
+          echo "---- HTML-validate Report Result ----"
+          cat html-validate-report.txt || echo "TXT file not found"
+          test -f html-validate-report.txt && cat somefile || echo "file not found"
+          echo "---- -------------------- ----"
+
+      - name: Stylelint Results Report
+        run: |
+          echo "---- Stylelint Report Result ----"
+          cat stylelint-report.txt || echo "TXT file not found"
+          echo "---- -------------------- ----"
+
+      - name: Eslint Results Report
+        run: |
+          echo "---- Eslint Report Result ----"
+          cat eslint-report.txt || echo "TXT file not found"
+          echo "---- -------------------- ----"  
+
+      - name: PHP Code Sniffer Results Report
+        run: |
+          echo "---- PHP Code Sniffer Report Result ----"
+          cat phpcs-report.txt || echo "TXT file not found"
+          echo "---- -------------------- ----"
+
+  errors:
+    name: Foutcontrole op linter logs
+    runs-on: ubuntu-latest
+    needs: [devskim, html-validate, stylelint, eslint, phpcs]
+    steps:
+      - name: Controleer op DevSkim errors
+        run: |
+          if [ -f devskim-results.sarif ]; then
+            ERRORS=$(jq '.runs[].results[] | select(.level == "error")' devskim-results.sarif | wc -l)
+            if [ "$ERRORS" -gt 0 ]; then
+              echo "❌ DevSkim vond $ERRORS fouten (level = error)"
+              exit 1
+            else
+              echo "✅ Geen DevSkim fouten met level 'error' gevonden."
+            fi
+          else
+            echo "⚠️ Geen devskim-results.sarif bestand gevonden. Controle overgeslagen."
+          fi
+
+      - name: Foutcontrole HTML Validate
+        run: |
+          if grep -Ei "(Fatal error|Uncaught exception|syntax error)" html-validate-report.txt; then
+            echo "❌ Fatale fout gevonden in HTML Validate output"
+            exit 1
+          fi
+
+      - name: Foutcontrole Stylelint
+        run: |
+          if grep -Ei "(Fatal error|Uncaught exception|syntax error)" stylelint-report.txt; then
+            echo "❌ Fatale fout gevonden in Stylelint output"
+            exit 1
+          fi
+
+      - name: Foutcontrole ESLint
+        run: |
+          if grep -Ei "(Fatal error|Uncaught exception|syntax error)" eslint-report.txt; then
+            echo "❌ Fatale fout gevonden in ESLint output"
+            exit 1
+          fi
+
+      - name: Foutcontrole PHP_CodeSniffer
+        run: |
+          if grep -Ei "(Fatal error|Uncaught exception|syntax error)" phpcs-report.txt; then
+            echo "❌ Fatale fout gevonden in PHPCS output"
+            exit 1
+          fi
+
+  artifacts:
+    name: Upload Artifacts
+    runs-on: ubuntu-latest
+    needs: [devskim, html-validate, stylelint, eslint, phpcs, errors]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check .txt output
+        run: ls -la
+
+      - name: Upload DevSkim SARIF
+        uses: actions/upload-artifact@v4
+        with:
+          name: devskim-sarif
+          path: devskim-results.sarif
+
+      - name: Upload Linter logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: linter-reports
+          path: |
+            html-validate-report.txt
+            stylelint-report.txt
+            eslint-report.txt
+            phpcs-report.txt
+
+  test-and-push:
+    name: Merge naar development na lint checks
+    runs-on: ubuntu-latest
+    needs: [ devskim, html-validate, stylelint, eslint, phpcs, errors ]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch all branches
+        run: git fetch --all
+
+      - name: Merge feature into development
+        run: |
+          git checkout development
+                    git merge ${{ github.ref_name }} --no-ff --no-edit --allow-unrelated-histories || {
+            echo "Conflict bij merge naar development";
+            exit 1;
+          }
+          git push origin development
+
+      - name: Merge updated development terug naar feature
+        run: |
+          git checkout ${{ github.ref_name }}
+          git merge origin/development --no-ff --no-edit || {
+            echo "Conflict bij merge van development terug naar feature";
+            exit 1;
+          }
+          git push origin ${{ github.ref_name }}
+
+      - name: Rebase feature branch op development
+        run: |
+          git fetch origin
+          git checkout ${{ github.ref_name }}
+          git rebase origin/development
+
+      - name: Merge naar development
+        if: success()
+        run: |
+          short_sha=$(echo "${{ github.sha }}" | cut -c1-7)
+          git fetch origin
+          git checkout development
+          git merge --no-ff --allow-unrelated-histories origin/${{ github.ref_name }} -m "✅ Auto-merge from ${{ github.ref_name }} (commit $short_sha) on $(date -u '+%Y-%m-%d')"
+          git push origin development
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

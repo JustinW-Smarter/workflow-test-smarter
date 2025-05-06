@@ -31,7 +31,7 @@ jobs:
 
       - name: Run html-validate
         run: |
-          html-validate "**/*.html" "**/*.htm" > html-validate-report.txt || true
+          html-validate "**/*.html" "**/*.htm" > html-validate-report.txt || echo "No HTML issues found." > html-validate-report.txt
 
   stylelint:
     name: Stylelint
@@ -45,7 +45,7 @@ jobs:
         run: npm install stylelint stylelint-config-standard
 
       - name: Run Stylelint
-        run: npx stylelint "**/*.css" "**/*.scss" "**/*.js" > stylelint-report.txt || true
+        run: npx stylelint "**/*.css" "**/*.scss" "**/*.js" > stylelint-report.txt || echo "No CSS issues found." > stylelint-report.txt
 
   eslint:
     name: ESLint
@@ -59,7 +59,7 @@ jobs:
         run: npm install eslint
 
       - name: Run ESLint
-        run: npx eslint "**/*.js" > eslint-report.txt || true
+        run: npx eslint "**/*.js" > eslint-report.txt || echo "No Javascript issues found." > eslint-report.txt
 
   phpcs:
     name: PHP Code Sniffer
@@ -73,7 +73,7 @@ jobs:
         run: composer global require "squizlabs/php_codesniffer=*"
 
       - name: Run PHPCS
-        run: ~/.composer/vendor/bin/phpcs --standard=PSR12 . > phpcs-report.txt || true
+        run: ~/.composer/vendor/bin/phpcs --standard=PSR12 . > phpcs-report.txt || echo "No PHPCS issues found." > phpcs-report.txt
 
   logs:
     name: Reports

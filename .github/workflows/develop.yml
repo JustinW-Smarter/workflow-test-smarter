@@ -221,6 +221,7 @@ jobs:
 
       - name: Merge updated development terug naar feature
         run: |
+          git fetch origin
           git checkout ${{ github.ref_name }}
           git merge origin/development --no-ff --no-edit || {
             echo "Conflict bij merge van development terug naar feature";

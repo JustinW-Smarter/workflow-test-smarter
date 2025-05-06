@@ -244,5 +244,19 @@ jobs:
           git checkout development
           git merge --no-ff --allow-unrelated-histories origin/${{ github.ref_name }} -m "✅ Auto-merge from ${{ github.ref_name }} (commit $short_sha) on $(date -u '+%Y-%m-%d')"
           git push origin development
+
+      - name: Update lokale branch met de laatste remote wijzigingen
+        run: |
+          echo "🔄 Ophalen van laatste remote wijzigingen..."
+          git fetch origin
+
+          current_branch=$(git rev-parse --abbrev-ref HEAD)
+          echo "📌 Huidige branch: $current_branch"
+
+          echo "🔁 Rebase lokale branch op origin/$current_branch..."
+          git rebase origin/$current_branch
+
+          echo "✅ Lokale branch is nu geüpdatet met de laatste wijzigingen van de remote branch."
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

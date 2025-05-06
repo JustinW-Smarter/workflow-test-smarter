@@ -214,9 +214,9 @@ jobs:
         run: |
           git fetch origin
           git checkout -B development origin/development
-          git merge ${{ github.ref_name }} --no-ff --no-edit || {
-            echo "Conflict bij merge naar development";
-            exit 1;
+          git merge ${{ github.ref_name }} --no-ff --no-edit --allow-unrelated-histories || {
+              echo "Conflict bij merge naar development";
+              exit 1;
           }
           git push origin development
 

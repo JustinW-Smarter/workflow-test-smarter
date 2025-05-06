@@ -168,6 +168,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check .txt output
+        run: ls -la
+
       - name: Upload DevSkim SARIF
         uses: actions/upload-artifact@v4
         with:

@@ -85,8 +85,13 @@ jobs:
 
       - name: Run ESLint #later uitbreiden met: eslint, @eslint/js, globals, typescript-eslint, @eslint/json, @eslint/markdown
         run: |
-          npx eslint "**/*.js" --config eslint.config.mjs > eslint-report.txt || true
-          [ -s eslint-report.txt ] || echo "No Javascript issues found." > eslint-report.txt
+          echo "Running ESLint..."
+          if [ ! -f eslint-report.txt ]; then
+          touch eslint-report.txt
+          fi
+          npx eslint "**/*.js" "**/*.json" "**/*.ts" --config eslint.config.mjs --output-file eslint-report.txt || true
+          [ -s eslint-report.txt ] || echo "No Javascript issues found." --output-file eslint-report.txt
+          cat eslint-report.txt
 
       - name: Upload ESLint Report as Artifact
         uses: actions/upload-artifact@v4

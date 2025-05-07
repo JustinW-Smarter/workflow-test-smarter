@@ -67,7 +67,7 @@ jobs:
 
       - name: Run Stylelint
         run: |
-          if [ ! -s stylelint-report.txt ]; then
+          if [ ! -f stylelint-report.txt ]; then
             touch stylelint-report.txt
           fi
           ls -la

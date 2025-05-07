@@ -52,17 +52,26 @@ jobs:
           echo "Listing CSS files:"
           find . -type f -name "*.css" -o -name "*.scss" -o -name "*.sass"
 
+      - name: Check Node.js version
+        run: node -v
+
+      - name: Check npm version
+        run: npm -v
+
+      - name: List installed npm packages
+        run: npm list --depth=0
+
+      - name: Show current directory
+        run: pwd
+
+      - name: List all files in the repo
+        run: ls -la
+
       - name: Run Stylelint
         run: |
           echo "Running Stylelint..."
           npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --output-file stylelint-report.txt || true
           cat stylelint-report.txt || echo "No Stylelint output"
-
-      - name: Upload Stylelint Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: stylelint-report
-          path: stylelint-report.txt
 
   eslint:
     name: ESLint

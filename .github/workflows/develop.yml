@@ -47,8 +47,10 @@ jobs:
 
       - name: Run Stylelint
         run: |
-          npx stylelint "**/*.css" "**/*.scss" "**/*.js" > stylelint-report.txt || true
-          [ -s stylelint-report.txt ] || echo "No CSS issues found." > stylelint-report.txt
+            npx stylelint "**/*.css" "**/*.scss" "**/*.js" > stylelint-report.txt || true
+            if [ ! -s stylelint-report.txt ]; then
+              echo "No CSS issues found." > stylelint-report.txt
+            fi
 
   eslint:
     name: ESLint

@@ -118,6 +118,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download Stylelint Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: stylelint-report
+
       - name: DevSkim Results Report
         run: |
           echo "---- DevSkim SARIF Report Result ----"

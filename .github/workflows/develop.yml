@@ -134,6 +134,11 @@ jobs:
         with:
           name: stylelint-report
 
+      - name: Download ESLint Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: eslint-report
+
       - name: DevSkim Results Report
         run: |
           echo "---- DevSkim SARIF Report Result ----"

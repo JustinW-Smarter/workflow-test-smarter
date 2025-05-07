@@ -67,12 +67,9 @@ jobs:
 
       - name: Run Stylelint
         run: |
-          if [ ! -f stylelint-report.txt ]; then
-            touch stylelint-report.txt
-          fi
           echo "Running Stylelint..."
           npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json > stylelint-report.txt || true
-          [ -s stylelint-report.txt ] || echo "No Stylelint issues found." 2>&1 stylelint-report.txt
+          [ -s stylelint-report.txt ] || echo "No Stylelint issues found." > stylelint-report.txt
           cat stylelint-report.txt
 
   eslint:

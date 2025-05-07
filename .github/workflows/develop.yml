@@ -131,6 +131,7 @@ jobs:
       - name: Stylelint Results Report
         run: |
           echo "---- Stylelint Report Result ----"
+          ls -la
           cat stylelint-report.txt || echo "TXT file not found"
           echo "---- -------------------- ----"
 

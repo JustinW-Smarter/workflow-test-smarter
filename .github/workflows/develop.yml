@@ -42,15 +42,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Stylelint
-        run: npm install stylelint stylelint-config-standard
+      - name: Install dependencies
+        run: npm install stylelint
+
+      - name: List CSS files
+        run: |
+          echo "Listing CSS files:"
+          find . -type f -name "*.css" -o -name "*.scss" -o -name "*.sass"
 
       - name: Run Stylelint
         run: |
-            npx stylelint "**/*.css" "**/*.scss" "**/*.js" > stylelint-report.txt || true
-            if [ ! -s stylelint-report.txt ]; then
-              echo "No CSS issues found." > stylelint-report.txt
-            fi
+          echo "Running Stylelint..."
+          npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --output-file stylelint-report.txt || true
+          cat stylelint-report.txt || echo "No Stylelint output"
+
+      - name: Upload Stylelint Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: stylelint-report
+          path: stylelint-report.txt
 
   eslint:
     name: ESLint

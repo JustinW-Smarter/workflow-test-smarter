@@ -72,9 +72,10 @@ jobs:
           fi
           ls -la
           echo "Running Stylelint..."
-          npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json --output-file stylelint-report.txt 2>&1 || true
+          npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json --output-file stylelint-report.txt 2>&1
           [ -s stylelint-report.txt ] || echo "No Stylelint issues found." 2>&1 stylelint-report.txt
           cat stylelint-report.txt
+          echo "end job"
 
   eslint:
     name: ESLint

@@ -27,12 +27,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install html-validate
-        run: npm install -g html-validate
+        run: npm install --save-dev html-validate
 
       - name: Run html-validate
         run: |
           html-validate "**/*.html" "**/*.htm" > html-validate-report.txt || true
           [ -s html-validate-report.txt ] || echo "No HTML issues found." > html-validate-report.txt
+
+      - name: Upload HTML-validate Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-validate-report
+          path: html-validate-report.txt
 
   stylelint:
     name: Stylelint
@@ -49,21 +55,6 @@ jobs:
         run: |
           echo "Listing CSS files:"
           find . -type f -name "*.css" -o -name "*.scss" -o -name "*.sass"
-
-      - name: Check Node.js version
-        run: node -v
-
-      - name: Check npm version
-        run: npm -v
-
-      - name: List installed npm packages
-        run: npm list --depth=0
-
-      - name: Show current directory
-        run: pwd
-
-      - name: List all files in the repo
-        run: ls -la
 
       - name: Run Stylelint
         run: |
@@ -92,10 +83,16 @@ jobs:
       - name: Install ESLint
         run: npm install eslint
 
-      - name: Run ESLint
+      - name: Run ESLint #later uitbreiden met: eslint, @eslint/js, globals, typescript-eslint, @eslint/json, @eslint/markdown
         run: |
           npx eslint "**/*.js" > eslint-report.txt || true
           [ -s eslint-report.txt ] || echo "No Javascript issues found." > eslint-report.txt
+
+      - name: Upload ESLint Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-report
+          path: eslint-report.txt
 
   phpcs:
     name: PHP Code Sniffer
@@ -112,6 +109,12 @@ jobs:
         run: |
           ~/.composer/vendor/bin/phpcs --standard=PSR12 . > phpcs-report.txt || true
           [ -s phpcs-report.txt ] || echo "No PHPCS issues found." > phpcs-report.txt
+
+      - name: Upload PHP Code Sniffer Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpcs-report
+          path: phpcs-report.txt
 
   logs:
     name: Reports

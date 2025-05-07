@@ -72,6 +72,12 @@ jobs:
           [ -s stylelint-report.txt ] || echo "No Stylelint issues found." --output-file stylelint-report.txt
           cat stylelint-report.txt
 
+      - name: Upload Stylelint Report as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stylelint-report
+          path: stylelint-report.txt
+
   eslint:
     name: ESLint
     needs: [devskim]

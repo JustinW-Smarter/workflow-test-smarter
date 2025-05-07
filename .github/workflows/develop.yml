@@ -68,8 +68,12 @@ jobs:
       - name: Run Stylelint
         run: |
           echo "Running Stylelint..."
-          npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json --output-file stylelint-report.txt || true
           if [ -f stylelint-report.txt ]; then
+            rm stylelint-report.txt
+          fi
+          touch stylelint-report.txt
+          npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json --output-file stylelint-report.txt || true
+          if [ -s stylelint-report.txt ]; then
             cat stylelint-report.txt
           else
             echo "Geen Stylelint output (geen fouten of waarschuwingen gevonden)"

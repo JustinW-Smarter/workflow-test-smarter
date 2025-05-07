@@ -90,13 +90,14 @@ jobs:
           touch eslint-report.txt
           fi
           ls -la
-          FILES=$(find . -name "*.js" -o -name "*.ts" -o -name "*.json")
+          FILES=$(find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.json" \))
           if [ -z "$FILES" ]; then
-            echo "⚠️ Geen JS/TS/JSON bestanden gevonden."
-            echo "No files to lint." > eslint-report.txt
+          echo "⚠️ Geen JS/TS/JSON bestanden gevonden."
+          echo "No files to lint." > eslint-report.txt
           else
-            npx eslint $FILES --config eslint.config.mjs --output-file eslint-report.txt || true
-            [ -s eslint-report.txt ] || echo "No ESLint issues found." > eslint-report.txt
+          find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.json" \) -print0 \
+          | xargs -0 npx eslint --config eslint.config.mjs --output-file eslint-report.txt || true
+          [ -s eslint-report.txt ] || echo "No ESLint issues found." > eslint-report.txt
           fi
           cat eslint-report.txt
 

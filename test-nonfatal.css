@@ -1,3 +1,13 @@
 body {
   color: red
 }
+a {
+  grid-template-areas:
+		'a a'
+		'b b b';
+  colr: hsla(20, 10%, 30%, 5%);
+}
+
+a {
+  --Foo: 1rem;
+}

@@ -86,6 +86,10 @@ jobs:
       - name: Run ESLint
         run: |
           echo "Running ESLint..."
+          if [ ! -f eslint-report.txt ]; then
+          touch eslint-report.txt
+          fi
+          ls -la
           FILES=$(find . -name "*.js" -o -name "*.ts" -o -name "*.json")
           if [ -z "$FILES" ]; then
             echo "⚠️ Geen JS/TS/JSON bestanden gevonden."

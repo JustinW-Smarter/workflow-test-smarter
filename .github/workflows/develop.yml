@@ -57,7 +57,7 @@ jobs:
           cat stylelint-report.txt || echo "No Stylelint output"
 
       - name: Upload Stylelint Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: stylelint-report
           path: stylelint-report.txt

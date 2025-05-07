@@ -68,12 +68,8 @@ jobs:
       - name: Run Stylelint
         run: |
           echo "Running Stylelint..."
-          touch stylelint-report.txt
-          rm stylelint-report.txt
-          touch stylelint-report.txt
-          npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json > stylelint-report.txt
+          npx stylelint "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json > stylelint-report.txt 2>&1
           cat stylelint-report.txt
-          echo "Test output" > test-output.txt
 
   eslint:
     name: ESLint

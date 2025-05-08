@@ -34,11 +34,6 @@ jobs:
           name: devskim-report
           path: devskim-report.txt
 
-      - name: Log and Upload DevSkim Report as Artifact
-        run: |
-          echo "Uploading devskim-report.txt as an artifact..."
-          cat devskim-report.txt
-
   html-validate:
     name: HTML Validate
     needs: [devskim]
@@ -157,7 +152,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: |
-            devskim-report
             html-validate-report
             stylelint-report
             eslint-report

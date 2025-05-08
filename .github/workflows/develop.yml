@@ -52,7 +52,9 @@ jobs:
         run: sudo apt-get install -y tidy
 
       - name: Prettier auto-fix HTML
-        run: npx prettier "**/*.html" "**/*.htm" --write
+        run: |
+          npx prettier "**/*.html" --write || true
+          npx prettier "**/*.htm" --write || true
 
       - name: Apply basic HTML fixes with tidy
         run: |
@@ -122,6 +124,7 @@ jobs:
           touch eslint-report.txt
           fi
           npx eslint "**/*.js" "**/*.json" --config eslint.config.mjs --output-file eslint-report.txt || true
+          npx eslint "**/*.ts" --output-file eslint-report.txt || true
           [ -s eslint-report.txt ] || echo "No Javascript issues found." --output-file eslint-report.txt
           cat eslint-report.txt
 

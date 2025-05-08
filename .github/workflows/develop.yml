@@ -131,11 +131,11 @@ jobs:
           ls -la
           if ls **/*.ts 1> /dev/null 2>&1; then
             echo "Found .ts files, running ESLint on them."
-            npx eslint --no-ignore "**/*.ts" --output-file eslint-report.txt || true
+            npx eslint --fix --no-ignore "**/*.ts" --output-file eslint-report.txt || true
           else
             echo "No .ts files found, skipping ESLint for .ts files."
           fi
-          npx eslint "**/*.js" "**/*.json" --config eslint.config.mjs --output-file eslint-report.txt || true
+          npx eslint --fix "**/*.js" "**/*.json" --config eslint.config.mjs --output-file eslint-report.txt || true
           [ -s eslint-report.txt ] || echo "No Javascript issues found." > eslint-report.txt
           cat eslint-report.txt
 

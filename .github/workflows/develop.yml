@@ -17,9 +17,10 @@ jobs:
 
       - name: Install DevSkim
         run: |
-          curl -L -o devskim https://github.com/microsoft/DevSkim/releases/latest/download/devskim-linux-x64
-          chmod +x devskim
-          sudo mv devskim /usr/local/bin/devskim
+          sudo apt-get update
+          sudo apt-get install -y dotnet-sdk-6.0
+          dotnet tool install --global Microsoft.DevSkim.CLI
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Run DevSkim scan and save reports
         run: |

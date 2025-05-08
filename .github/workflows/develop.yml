@@ -306,7 +306,7 @@ jobs:
 
       - name: Foutcontrole ESLint
         run: |
-          if grep -Ei "(ERROR|Error|error)" eslint-report.txt; then
+          if grep -Ei "(ERROR |Error |error )" eslint-report.txt; then
             echo "❌ Error gevonden in ESLint output"
             exit 1
           fi

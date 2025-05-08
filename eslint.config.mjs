@@ -4,7 +4,6 @@ import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import json from "@eslint/json";
 import markdown from "@eslint/markdown";
-import prettier from "eslint-plugin-prettier";
 import { defineConfig } from "eslint/config";
 
 
@@ -30,5 +29,4 @@ export default defineConfig([
   { files: ["**/*.jsonc"], plugins: { json }, language: "json/jsonc", extends: ["json/recommended"] },
   { files: ["**/*.json5"], plugins: { json }, language: "json/json5", extends: ["json/recommended"] },
   { files: ["**/*.md"], plugins: { markdown }, language: "markdown/gfm", extends: ["markdown/recommended"] },
-  { files: ["**/*.js"], plugins: { prettier }, extends: ["eslint:recommended"] }
 ]);

@@ -120,27 +120,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install ESLint and plugins
-        run: npm install --save-dev eslint @eslint/js globals @typescript-eslint/eslint-plugin @typescript-eslint/parser @eslint/json @eslint/markdown
+        run: npm install --save-dev eslint @eslint/js globals @typescript-eslint/eslint-plugin @typescript-eslint/parser @eslint/json @eslint/markdown prettier eslint-config-prettier eslint-plugin-prettier
 
-      - name: Run ESLint
+      - name: Run ESLint #later uitbreiden met: eslint, @eslint/js, globals, typescript-eslint, @eslint/json, @eslint/markdown
         run: |
           echo "Running ESLint..."
-
-          # Controleer of er daadwerkelijk .ts-bestanden zijn
+          if [ ! -f eslint-report.txt ]; then
+          touch eslint-report.txt
+          fi
+          ls -la
           if find . -name "*.ts" | grep -q .; then
-            echo "Found .ts files, running ESLint on them..."
-            if npx eslint --print-config "*.ts" >/dev/null 2>&1; then
-              npx eslint "**/*.ts" --output-file eslint-report.txt || true
-            else
-              echo "⚠️ No valid ESLint config for TypeScript files, skipping .ts linting."
-            fi
+            echo "Found .ts files, running ESLint on them."
+            npx eslint "**/*.ts" --output-file eslint-report.txt || true
           else
             echo "No .ts files found, skipping ESLint for .ts files."
           fi
-
-          # Run ESLint op JS en JSON zonder fout te laten falen
           npx eslint "**/*.js" "**/*.json" --config eslint.config.mjs --output-file eslint-report.txt || true
-          [ -s eslint-report.txt ] || echo "No JavaScript issues found." > eslint-report.txt
+          [ -s eslint-report.txt ] || echo "No Javascript issues found." --output-file eslint-report.txt
           cat eslint-report.txt
 
       - name: Upload ESLint Report as Artifact

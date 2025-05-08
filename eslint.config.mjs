@@ -29,4 +29,17 @@ export default defineConfig([
   { files: ["**/*.jsonc"], plugins: { json }, language: "json/jsonc", extends: ["json/recommended"] },
   { files: ["**/*.json5"], plugins: { json }, language: "json/json5", extends: ["json/recommended"] },
   { files: ["**/*.md"], plugins: { markdown }, language: "markdown/gfm", extends: ["markdown/recommended"] },
+  {
+    files: ["**/*.js"],
+    plugins: {
+      prettier: require("eslint-plugin-prettier"),
+    },
+    extends: [
+      "eslint:recommended",
+      "plugin:prettier/recommended",
+    ],
+    rules: {
+      "prettier/prettier": "error"
+    }
+  }
 ]);

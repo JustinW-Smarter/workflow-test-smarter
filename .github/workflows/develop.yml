@@ -34,6 +34,11 @@ jobs:
           name: devskim-report
           path: devskim-report.txt
 
+      - name: Log and Upload DevSkim Report as Artifact
+        run: |
+          echo "Uploading devskim-report.txt as an artifact..."
+          cat devskim-report.txt
+
   html-validate:
     name: HTML Validate
     needs: [devskim]

@@ -45,9 +45,15 @@ jobs:
       - name: Install html-validate
         run: npm install --save-dev html-validate
 
+      - name: Install Prettier
+        run: npm install --save-dev prettier
+
+      - name: Prettier auto-fix HTML
+        run: npx prettier "**/*.html" --write
+
       - name: Run html-validate
         run: |
-          npx html-validate "**/*.html" "**/*.htm" --config htmlvalidate.json > html-validate-report.txt || true
+          npx html-validate "**/*.html" "**/*.htm" --config htmlvalidate.json --formatter stylish > html-validate-report.txt || true
           [ -s html-validate-report.txt ] || echo "No HTML issues found." > html-validate-report.txt
           cat html-validate-report.txt
 

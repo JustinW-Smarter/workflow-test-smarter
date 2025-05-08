@@ -148,27 +148,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fetching Reports
-        run: |
-          echo "Downloading devskim-report..."
-          actions/download-artifact@v4 with:
-            name: devskim-report
+      - name: Download DevSkim Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: devskim-report
 
-          echo "Downloading html-validate-report..."
-          actions/download-artifact@v4 with:
-            name: html-validate-report
+      - name: Download HTML-validate Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: html-validate-report
 
-          echo "Downloading stylelint-report..."
-          actions/download-artifact@v4 with:
-            name: stylelint-report
+      - name: Download Stylelint Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: stylelint-report
 
-          echo "Downloading eslint-report..."
-          actions/download-artifact@v4 with:
-            name: eslint-report
+      - name: Download ESLint Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: eslint-report
 
-          echo "Downloading phpcs-report..."
-          actions/download-artifact@v4 with:
-            name: phpcs-report
+      - name: Download PHP Code Sniffer Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: phpcs-report
 
       - name: DevSkim Results Report
         run: |

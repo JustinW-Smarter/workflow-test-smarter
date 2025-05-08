@@ -29,4 +29,17 @@ export default defineConfig([
   { files: ["**/*.jsonc"], plugins: { json }, language: "json/jsonc", extends: ["json/recommended"] },
   { files: ["**/*.json5"], plugins: { json }, language: "json/json5", extends: ["json/recommended"] },
   { files: ["**/*.md"], plugins: { markdown }, language: "markdown/gfm", extends: ["markdown/recommended"] },
+  {
+    files: ["**/*.js"],
+    rules: {
+      semi: ["error", "always"],
+      "no-unused-vars": "warn",
+      "no-magic-numbers": "off",
+      quotes: ["error", "single"],
+      indent: ["error", 2],
+      "space-infix-ops": "error",
+      "no-console": "warn",
+      "no-extra-semi": "error"
+    }
+  }
 ]);

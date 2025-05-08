@@ -155,7 +155,6 @@ jobs:
         run: |
           echo "---- HTML-validate Report Result ----"
           cat html-validate-report.txt || echo "TXT file not found"
-          test -f html-validate-report.txt && cat somefile || echo "file not found"
           echo "---- -------------------- ----"
 
       - name: Stylelint Results Report

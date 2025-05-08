@@ -20,7 +20,7 @@ jobs:
 
       - name: Analyze all files with DevSkim
         run: | # Scan all files in the repository
-          devskim analyze . --output-format sarif > devskim-results.sarif
+          devskim analyze .
 
       - name: Convert SARIF to readable text
         run: |

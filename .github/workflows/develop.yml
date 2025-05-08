@@ -130,6 +130,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download HTML-validate Report Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: html-validate-report
+
       - name: Download Stylelint Report Artifact
         uses: actions/download-artifact@v4
         with:

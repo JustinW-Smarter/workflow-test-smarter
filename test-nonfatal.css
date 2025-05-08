@@ -1,13 +1,17 @@
 body {
-  color: red
-}
-a {
-  grid-template-areas:
-		'a a'
-		'b b b';
-  colr: hsla(20, 10%, 30%, 5%);
+  color: red;
+  background:blue ;
 }
 
 a {
-  --Foo: 1rem;
+  grid-template-areas:
+    "a a"
+    "b b b";
+  color: hsla(20, 10%, 30%, 0.5);
+  font-size:16px ;
+}
+
+a {
+  --Foo:1rem ;
+  content: 'test' ;
 }

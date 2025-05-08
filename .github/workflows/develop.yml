@@ -20,7 +20,8 @@ jobs:
 
       - name: Convert SARIF to readable text
         run: |
-          jq -r '.' devskim-results.sarif > devskim-report.txt
+          jq -r '.runs[].results[] | "[\(.level)] \(.ruleId): \(.message.text)"' devskim-results.sarif > devskim-report.txt || true
+          [ -s devskim-report.txt ] || echo "No DevSkim issues found." > devskim-report.txt
           ls -la
           cat devskim-report.txt
 

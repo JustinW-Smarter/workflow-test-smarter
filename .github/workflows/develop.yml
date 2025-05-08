@@ -15,19 +15,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install DevSkim
-        run: |
-          wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
-          chmod +x dotnet-install.sh
-          ./dotnet-install.sh --channel LTS
-          export PATH="$HOME/.dotnet:$PATH"
-          ~/.dotnet/dotnet --version  # controleren
-          ~/.dotnet/dotnet tool install --tool-path . devskim
+      - name: Run DevSkim
+        uses: microsoft/DevSkim-Action@v1
 
-      - name: Run DevSkim scan and save reports
+      - name: Convert SARIF to readable text
         run: |
-          devskim analyze -r . --output-format sarif > devskim-report.sarif
-          devskim analyze -r . --output-format text > devskim-report.txt
+          jq -r '.runs[].results[] | "[\(.level)] \(.ruleId): \(.message.text)"' results.sarif > devskim-report.txt
           cat devskim-report.txt
 
   html-validate:

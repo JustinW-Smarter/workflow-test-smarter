@@ -15,8 +15,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run DevSkim
-        uses: microsoft/DevSkim-Action@v1
+      - name: Install DevSkim
+        run: |
+          curl -L -o devskim https://github.com/microsoft/DevSkim/releases/latest/download/devskim-linux-x64
+          chmod +x devskim
+          sudo mv devskim /usr/local/bin/devskim
+
+      - name: Run DevSkim scan and save reports
+        run: |
+          devskim analyze -r . --output-format sarif > devskim-report.sarif
+          devskim analyze -r . --output-format text > devskim-report.txt
+          cat devskim-report.txt
 
   html-validate:
     name: HTML Validate

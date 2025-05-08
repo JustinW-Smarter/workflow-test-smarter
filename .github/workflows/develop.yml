@@ -150,20 +150,25 @@ jobs:
 
       - name: Fetching Reports
         run: |
-          artifacts=(
-            "devskim-report"
-            "html-validate-report"
-            "stylelint-report"
-            "eslint-report"
-            "phpcs-report"
-          )
+          echo "Downloading devskim-report..."
+          actions/download-artifact@v4 with:
+            name: devskim-report
 
-          for artifact in "${artifacts[@]}"
-          do
-            echo "Downloading $artifact..."
-            actions/download-artifact@v4 with:
-              name: $artifact
-          done
+          echo "Downloading html-validate-report..."
+          actions/download-artifact@v4 with:
+            name: html-validate-report
+
+          echo "Downloading stylelint-report..."
+          actions/download-artifact@v4 with:
+            name: stylelint-report
+
+          echo "Downloading eslint-report..."
+          actions/download-artifact@v4 with:
+            name: eslint-report
+
+          echo "Downloading phpcs-report..."
+          actions/download-artifact@v4 with:
+            name: phpcs-report
 
       - name: DevSkim Results Report
         run: |

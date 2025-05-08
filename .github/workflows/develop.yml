@@ -129,7 +129,7 @@ jobs:
           touch eslint-report.txt
           fi
           ls -la
-          if find . -name "*.ts" | grep -q .; then
+          if [ -n "$(find . -name '*.ts')" ]; then
             echo "Found .ts files, running ESLint on them."
             npx eslint "**/*.ts" --output-file eslint-report.txt || true
           else

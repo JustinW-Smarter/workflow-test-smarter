@@ -279,9 +279,10 @@ jobs:
       - name: Controleer op DevSkim errors
         run: |
           if [ -f devskim-results.sarif ]; then
-            ERRORS=$(jq '.runs[].results[] | select(.level == "error")' devskim-results.sarif | wc -l)
-            if [ "$ERRORS" -gt 0 ]; then
-              echo "❌ DevSkim vond $ERRORS fouten (level = error)"
+            ERROR_COUNT=$(jq '.runs[].results[] | select(.level == "error")' devskim-results.sarif | wc -l)
+            echo "Debug: Aantal gevonden DevSkim errors = $ERROR_COUNT" # Debugging line
+            if [ "$ERROR_COUNT" -gt 0 ]; then
+              echo "❌ DevSkim vond $ERROR_COUNT fouten (level = error)"
               exit 1
             else
               echo "✅ Geen DevSkim fouten met level 'error' gevonden."
@@ -292,29 +293,37 @@ jobs:
 
       - name: Foutcontrole HTML Validate
         run: |
-          if ! grep -Ei "0 errors" html-validate-report.txt; then
-            echo "❌ Error gevonden in HTML Validate output"
+          ERROR_COUNT=$(grep -Ei "([0-9]+) errors" html-validate-report.txt | sed -E 's/([0-9]+) errors.*/\1/')
+          echo "Debug: Aantal HTML Validate errors = $ERROR_COUNT" # Debugging line
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "❌ HTML Validate vond $ERROR_COUNT fouten"
             exit 1
           fi
 
       - name: Foutcontrole Stylelint
         run: |
-          if ! grep -Ei "0 errors" stylelint-report.txt; then
-            echo "❌ Error gevonden in Stylelint output"
+          ERROR_COUNT=$(grep -Ei "([0-9]+) errors" stylelint-report.txt | sed -E 's/([0-9]+) errors.*/\1/')
+          echo "Debug: Aantal Stylelint errors = $ERROR_COUNT" # Debugging line
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "❌ Stylelint vond $ERROR_COUNT fouten"
             exit 1
           fi
 
       - name: Foutcontrole ESLint
         run: |
-          if ! grep -Ei "0 errors" eslint-report.txt; then
-            echo "❌ Error gevonden in ESLint output"
+          ERROR_COUNT=$(grep -Ei "([0-9]+) errors" eslint-report.txt | sed -E 's/([0-9]+) errors.*/\1/')
+          echo "Debug: Aantal ESLint errors = $ERROR_COUNT" # Debugging line
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "❌ ESLint vond $ERROR_COUNT fouten"
             exit 1
           fi
 
       - name: Foutcontrole PHP_CodeSniffer
         run: |
-          if ! grep -Eiq "FOUND 0 ERRORS" phpcs-report.txt; then
-            echo "❌ Error gevonden in PHPCS output"
+          ERROR_COUNT=$(grep -Ei "FOUND ([0-9]+) ERRORS" phpcs-report.txt | sed -E 's/FOUND ([0-9]+) ERRORS.*/\1/')
+          echo "Debug: Aantal PHPCS errors = $ERROR_COUNT" # Debugging line
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "❌ PHPCS vond $ERROR_COUNT fouten"
             exit 1
           fi
 

@@ -149,13 +149,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetching Reports
-        uses: actions/download-artifact@v4
-        with:
-          name: |
-            html-validate-report
-            stylelint-report
-            eslint-report
-            phpcs-report
+        run: |
+          artifacts=(
+            "devskim-report"
+            "html-validate-report"
+            "stylelint-report"
+            "eslint-report"
+            "phpcs-report"
+          )
+
+          for artifact in "${artifacts[@]}"
+          do
+            echo "Downloading $artifact..."
+            actions/download-artifact@v4 with:
+              name: $artifact
+          done
 
       - name: DevSkim Results Report
         run: |

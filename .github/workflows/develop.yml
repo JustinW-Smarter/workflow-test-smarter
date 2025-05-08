@@ -48,8 +48,17 @@ jobs:
       - name: Install Prettier
         run: npm install --save-dev prettier
 
+      - name: Install tidy-html5
+        run: sudo apt-get install -y tidy
+
       - name: Prettier auto-fix HTML
-        run: npx prettier "**/*.html" --write
+        run: npx prettier "**/*.html" "**/*.htm" --write
+
+      - name: Apply basic HTML fixes with tidy
+        run: |
+          for f in $(find . -name "*.html" -o -name "*.htm"); do
+          tidy -config tidy.conf -modify "$f" >/dev/null 2>&1 || true
+          done
 
       - name: Run html-validate
         run: |

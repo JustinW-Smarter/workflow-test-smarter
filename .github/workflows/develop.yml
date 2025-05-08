@@ -18,6 +18,12 @@ jobs:
       - name: Run DevSkim
         uses: microsoft/DevSkim-Action@v1
 
+      - name: Convert SARIF to readable text
+        run: |
+          ls -la
+          jq -r '.runs[].results[] | "[\(.level)] \(.ruleId): \(.message.text)"' devskim-results.sarif > devskim-report.txt
+          cat devskim-report.txt
+
   html-validate:
     name: HTML Validate
     needs: [devskim]

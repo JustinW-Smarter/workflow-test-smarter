@@ -311,7 +311,7 @@ jobs:
 
       - name: Foutcontrole ESLint
         run: |
-          ERROR_COUNT=$(grep -Ei "✖ [0-9]+ problems \([0-9]+ errors" eslint-report.txt | sed -E 's/✖ [0-9]+ problems \([0-9]+ errors, [0-9]+ warnings\)/\1/')
+          ERROR_COUNT=$(grep -Ei "✖ [0-9]+ problems \([0-9]+ errors" eslint-report.txt | sed -E 's/.*✖ [0-9]+ problems \([0-9]+ errors, ([0-9]+) warnings\).*/\1/')
           echo "Debug: Aantal ESLint errors = $ERROR_COUNT" # Debugging line
           if [ "$ERROR_COUNT" -gt 0 ]; then
             echo "❌ ESLint vond $ERROR_COUNT fouten"

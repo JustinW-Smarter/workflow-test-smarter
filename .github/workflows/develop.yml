@@ -19,8 +19,9 @@ jobs:
         uses: microsoft/DevSkim-Action@v1
 
       - name: Analyze all files with DevSkim
-        run: | # Scan all files in the repository
-          devskim analyze . --output-format sarif > $GITHUB_WORKSPACE/devskim-results.sarif
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/temp
+          devskim analyze . --output-format sarif > $GITHUB_WORKSPACE/temp/devskim-results.sarif
 
       - name: Convert SARIF to readable text
         run: |

@@ -135,7 +135,7 @@ jobs:
           else
             echo "No .ts files found, skipping ESLint for .ts files."
           fi
-          npx eslint --fix "**/*.js" "**/*.json" --config eslint.config.mjs --output-file eslint-report.txt || true
+          npx eslint --fix "**/*.js" "**/*.json" --ignore-pattern package-lock.json --config eslint.config.mjs --output-file eslint-report.txt || true
           [ -s eslint-report.txt ] || echo "No Javascript issues found." > eslint-report.txt
           cat eslint-report.txt
 
@@ -347,7 +347,7 @@ jobs:
   test-and-push:
     name: Merge naar development na lint checks
     runs-on: ubuntu-latest
-    needs: [ devskim, html-validate, stylelint, eslint, phpcs, errors ]
+    needs: [errors]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

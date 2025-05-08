@@ -116,6 +116,7 @@ jobs:
         run: |
           ~/.composer/vendor/bin/phpcs --standard=PSR12 . > phpcs-report.txt || true
           [ -s phpcs-report.txt ] || echo "No PHPCS issues found." > phpcs-report.txt
+          cat phpcs-report.txt
 
       - name: Upload PHP Code Sniffer Report as Artifact
         uses: actions/upload-artifact@v4

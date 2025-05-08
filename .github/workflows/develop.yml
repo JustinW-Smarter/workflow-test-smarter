@@ -152,26 +152,31 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: devskim-report
+        continue-on-error: true
 
       - name: Download HTML-validate Report Artifact
         uses: actions/download-artifact@v4
         with:
           name: html-validate-report
+        continue-on-error: true
 
       - name: Download Stylelint Report Artifact
         uses: actions/download-artifact@v4
         with:
           name: stylelint-report
+        continue-on-error: true
 
       - name: Download ESLint Report Artifact
         uses: actions/download-artifact@v4
         with:
           name: eslint-report
+        continue-on-error: true
 
       - name: Download PHP Code Sniffer Report Artifact
         uses: actions/download-artifact@v4
         with:
           name: phpcs-report
+        continue-on-error: true
 
       - name: DevSkim Results Report
         run: |

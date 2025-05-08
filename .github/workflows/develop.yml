@@ -114,13 +114,8 @@ jobs:
 
       - name: Run PHPCS
         run: |
-          ~/.composer/vendor/bin/phpcs --standard=PSR12 \
-          "**/*.php" \
-          "**/*.tpl" \
-          "**/*.html" \
-          "**/*.htm" \
-          "**/*.phtml" \
-          "**/*.inc" > phpcs-report.txt || true
+          FILES=$(find . -type f \( -name "*.php" -o -name "*.tpl" -o -name "*.html" -o -name "*.htm" -o -name "*.phtml" -o -name "*.inc" \))
+          ~/.composer/vendor/bin/phpcs --standard=PSR12 $FILES > phpcs-report.txt || true
           [ -s phpcs-report.txt ] || echo "No PHPCS issues found." > phpcs-report.txt
           cat phpcs-report.txt
 

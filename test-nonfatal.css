@@ -1,17 +1,13 @@
 body {
-  color: red;
-  background:blue ;
+  color:red ;
+  background-color: blue ;
 }
 
 a {
-  grid-template-areas:
-    "a a"
-    "b b b";
-  color: hsla(20, 10%, 30%, 0.5);
-  font-size:16px ;
+  font-size :16px;
+  color : 'black' ;
 }
 
 a {
-  --Foo:1rem ;
-  content: 'test' ;
+  padding :10px;
 }

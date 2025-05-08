@@ -21,7 +21,7 @@ jobs:
       - name: Convert SARIF to readable text
         run: |
           ls -la
-          jq -r '.runs[].results[] | "[\(.level)] \(.ruleId): \(.message.text)"' results.sarif > devskim-report.txt
+          jq -r '.runs[].results[] | "[\(.level)] \(.ruleId): \(.message.text)"' devskim-results.sarif > devskim-report.txt
           cat devskim-report.txt
 
   html-validate:

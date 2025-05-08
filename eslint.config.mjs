@@ -39,7 +39,8 @@ export default defineConfig([
       indent: ["error", 2],
       "space-infix-ops": "error",
       "no-console": "warn",
-      "no-extra-semi": "error"
+      "no-extra-semi": "error",
+      "no-constant-condition": "warn"
     }
   }
 ]);

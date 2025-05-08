@@ -17,6 +17,9 @@ jobs:
 
       - name: Run DevSkim
         uses: microsoft/DevSkim-Action@v1
+        with:
+          directory-to-scan: '.'
+          output-filename: devskim-results.sarif
 
       - name: Convert SARIF to readable text
         run: |

@@ -17,10 +17,12 @@ jobs:
 
       - name: Install DevSkim
         run: |
-          sudo apt-get update
-          sudo apt-get install -y dotnet-sdk-9.0
-          dotnet tool install --global Microsoft.DevSkim.CLI
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+          wget https://dot.net/v1/dotnet-install.sh -O dotnet-install.sh
+          chmod +x dotnet-install.sh
+          ./dotnet-install.sh --channel LTS
+          export PATH="$HOME/.dotnet:$PATH"
+          ~/.dotnet/dotnet --version  # controleren
+          ~/.dotnet/dotnet tool install --tool-path . devskim
 
       - name: Run DevSkim scan and save reports
         run: |

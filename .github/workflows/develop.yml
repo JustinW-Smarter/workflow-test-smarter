@@ -262,29 +262,29 @@ jobs:
 
       - name: Foutcontrole HTML Validate
         run: |
-          if grep -Ei "(Fatal error|Uncaught exception|syntax error)" html-validate-report.txt; then
-            echo "❌ Fatale fout gevonden in HTML Validate output"
+          if grep -Ei "(ERROR|Error|error)" html-validate-report.txt; then
+            echo "❌ Error gevonden in HTML Validate output"
             exit 1
           fi
 
       - name: Foutcontrole Stylelint
         run: |
-          if grep -Ei "(Fatal error|Uncaught exception|syntax error)" stylelint-report.txt; then
-            echo "❌ Fatale fout gevonden in Stylelint output"
+          if grep -Ei "(ERROR|Error|error)" stylelint-report.txt; then
+            echo "❌ Error gevonden in Stylelint output"
             exit 1
           fi
 
       - name: Foutcontrole ESLint
         run: |
-          if grep -Ei "(Fatal error|Uncaught exception|syntax error)" eslint-report.txt; then
-            echo "❌ Fatale fout gevonden in ESLint output"
+          if grep -Ei "(ERROR|Error|error)" eslint-report.txt; then
+            echo "❌ Error gevonden in ESLint output"
             exit 1
           fi
 
       - name: Foutcontrole PHP_CodeSniffer
         run: |
-          if grep -Ei "(Fatal error|Uncaught exception|syntax error)" phpcs-report.txt; then
-            echo "❌ Fatale fout gevonden in PHPCS output"
+          if grep -Ei "(ERROR|Error|error)" phpcs-report.txt; then
+            echo "❌ Error gevonden in PHPCS output"
             exit 1
           fi
 

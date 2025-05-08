@@ -292,28 +292,28 @@ jobs:
 
       - name: Foutcontrole HTML Validate
         run: |
-          if grep -Ei "(ERROR|Error|error)" html-validate-report.txt; then
+          if ! grep -Ei "0 errors" html-validate-report.txt; then
             echo "❌ Error gevonden in HTML Validate output"
             exit 1
           fi
 
       - name: Foutcontrole Stylelint
         run: |
-          if grep -Ei "(ERROR|Error|error)" stylelint-report.txt; then
+          if ! grep -Ei "0 errors" stylelint-report.txt; then
             echo "❌ Error gevonden in Stylelint output"
             exit 1
           fi
 
       - name: Foutcontrole ESLint
         run: |
-          if grep -Ei "(ERROR |Error |error )" eslint-report.txt; then
+          if ! grep -Ei "0 errors" eslint-report.txt; then
             echo "❌ Error gevonden in ESLint output"
             exit 1
           fi
 
       - name: Foutcontrole PHP_CodeSniffer
         run: |
-          if grep -Ei "(ERROR|Error|error)" phpcs-report.txt; then
+          if ! grep -Eiq "FOUND 0 ERRORS" phpcs-report.txt; then
             echo "❌ Error gevonden in PHPCS output"
             exit 1
           fi

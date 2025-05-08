@@ -321,7 +321,7 @@ jobs:
   artifacts:
     name: Upload Artifacts
     runs-on: ubuntu-latest
-    needs: [devskim, html-validate, stylelint, eslint, phpcs, errors]
+    needs: [logs]
     steps:
       - uses: actions/checkout@v4
 

@@ -249,6 +249,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [devskim, html-validate, stylelint, eslint, phpcs]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download all artifacts via GH CLI
         run: |
           if [ ! -f .github/scripts/download-artifacts.sh ]; then

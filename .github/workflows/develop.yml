@@ -350,8 +350,7 @@ jobs:
 
       - name: Zet gedownloade artifacts terug naar root
         run: |
-          cp artifacts/*/*.txt . || true
-          cp artifacts/*/*.sarif . || true
+          find artifacts -type f \( -name "*.txt" -o -name "*.sarif" \) -size +0c -exec cp {} . \;
 
       - name: Upload DevSkim SARIF
         uses: actions/upload-artifact@v4

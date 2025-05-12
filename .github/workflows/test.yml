@@ -60,7 +60,7 @@ jobs:
       - name: Prepare composer project if needed
         run: |
           if [ ! -f composer.json ]; then
-            composer init -n
+            echo '{"name": "smarter/psalm-project", "require-dev": {}, "autoload": {"psr-4": {"App\\\\": "src/"}}}' > composer.json
           fi
 
       - name: Install dependencies

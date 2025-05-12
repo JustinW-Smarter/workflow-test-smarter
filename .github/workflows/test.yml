@@ -93,7 +93,7 @@ jobs:
           RESPONSE=$(curl -s -X POST https://git-dev.smarter.nl/webhooks/deploy.php \
             -H "Content-Type: application/json" \
             -H "X-Smarter-Secret: ${{ secrets.WEBHOOK_SECRET_TEST }}" \
-            -d '{"ref": "refs/heads/main"}')
+            -d '{"ref": "refs/heads/test"}')
           echo "$RESPONSE"
           echo "live_response=$RESPONSE" >> $GITHUB_OUTPUT
 
@@ -105,7 +105,7 @@ jobs:
       - name: 📥 Download server log (deploy.log)
         run: |
           echo "⬇️ Downloaden van deploy.log..."
-          curl -s https://git.smarter.nl/webhook-rsync/webhooks/deploy.log -o deploy.log
+          curl -s https://git-dev.smarter.nl/webhook-rsync/webhooks/deploy.log -o deploy.log
           echo "✅ Logbestand gedownload. Inhoud:"
           cat deploy.log
 

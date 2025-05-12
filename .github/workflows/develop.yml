@@ -102,7 +102,7 @@ jobs:
           touch stylelint-report.txt
           fi
           npx stylelint --fix "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json --output-file stylelint-report.txt || true
-          [ -s stylelint-report.txt ] || echo "No Stylelint issues found." --output-file stylelint-report.txt
+          [ -s stylelint-report.txt ] || echo "" --output-file stylelint-report.txt
           cat stylelint-report.txt
 
       - name: Upload Stylelint Report as Artifact
@@ -136,7 +136,7 @@ jobs:
             echo "No .ts files found, skipping ESLint for .ts files."
           fi
           npx eslint --fix "**/*.js" "**/*.json" --ignore-pattern package-lock.json --config eslint.config.mjs --output-file eslint-report.txt || true
-          [ -s eslint-report.txt ] || echo "No Javascript issues found." > eslint-report.txt
+          [ -s eslint-report.txt ] || echo "" > eslint-report.txt
           cat eslint-report.txt
 
       - name: Upload ESLint Report as Artifact
@@ -357,7 +357,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: devskim-sarif
-          path: devskim-results.sarif
+          path: devskim-report.txt
 
       - name: Upload Linter logs
         uses: actions/upload-artifact@v4

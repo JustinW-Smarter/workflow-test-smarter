@@ -337,7 +337,7 @@ jobs:
       - name: Download all artifacts via GH CLI
         run: |
           chmod +x .github/scripts/download-artifacts.sh
-          .github/scripts/download-all-artifacts.sh
+          .github/scripts/download-artifacts.sh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

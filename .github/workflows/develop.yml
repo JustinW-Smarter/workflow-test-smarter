@@ -70,7 +70,7 @@ jobs:
       - name: Run html-validate
         run: |
           npx html-validate "**/*.html" "**/*.htm" --config htmlvalidate.json --formatter stylish > html-validate-report.txt || true
-          [ -s html-validate-report.txt ] || echo "No HTML issues found." > html-validate-report.txt
+          [ -s html-validate-report.txt ] || echo "" > html-validate-report.txt
           cat html-validate-report.txt
 
       - name: Upload HTML-validate Report as Artifact

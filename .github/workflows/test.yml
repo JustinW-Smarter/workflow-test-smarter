@@ -8,6 +8,10 @@ on:
       - opened
       - synchronize
 
+  push:
+    branches:
+      - test  # Trigger de deploy alleen wanneer er een push naar de test branch is
+
 jobs:
   codeql:
     name: CodeQL Analysis
@@ -81,7 +85,7 @@ jobs:
   test-deploy:
     runs-on: ubuntu-latest
     needs: [codeql, dependency-review, psalm, semgrep]
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'push' && github.ref == 'refs/heads/test'  # Alleen uitvoeren als er een push naar de test branch is
     environment: Testing
   
     steps:

@@ -211,13 +211,17 @@ jobs:
       - name: DevSkim Results Report
         run: | # Check hier later ook toevoegen als hieronder, wanneer devskim werkt.
           echo "---- DevSkim SARIF Report Result ----"
-          test -f devskim-results.sarif  && cat devskim-results.sarif  || echo "file not found"
+          if [ "$(stat -c %s devskim-results.sarif)" -gt 1 ]; then
+            cat devskim-results.sarif
+          else
+            echo "No DevSkim issues found."
+          fi
           echo "---- -------------------- ----"
 
       - name: HTML-validate Results Report
         run: |
           echo "---- HTML-validate Report Result ----"
-          if [ -s html-validate-report.txt ]; then
+          if [ "$(stat -c %s html-validate-report.txt)" -gt 1 ]; then
             cat html-validate-report.txt
           else
             echo "No HTML issues found."
@@ -227,7 +231,7 @@ jobs:
       - name: Stylelint Results Report
         run: |
           echo "---- Stylelint Report Result ----"
-          if [ -s stylelint-report.txt ]; then
+          if [ "$(stat -c %s stylelint-report.txt)" -gt 1 ]; then
             cat stylelint-report.txt
           else
             echo "No CSS issues found."
@@ -237,7 +241,7 @@ jobs:
       - name: Eslint Results Report
         run: |
           echo "---- Eslint Report Result ----"
-          if [ -s eslint-report.txt ]; then
+          if [ "$(stat -c %s eslint-report.txt)" -gt 1 ]; then
             cat eslint-report.txt
           else
             echo "No Javascript issues found."
@@ -247,7 +251,7 @@ jobs:
       - name: PHP Code Sniffer Results Report
         run: |
           echo "---- PHP Code Sniffer Report Result ----"
-          if [ -s phpcs-report.txt ]; then
+          if [ "$(stat -c %s phpcs-report.txt)" -gt 1 ]; then
             cat phpcs-report.txt
           else
             echo "No PHP issues found."
@@ -409,6 +413,11 @@ jobs:
               echo "Conflict bij merge naar development";
               exit 1;
           }
+
+      - name: Forceer verwijdering van verwijderde bestanden
+        run: |
+          git ls-files --deleted -z | xargs -0 git rm
+          git commit -m "Verwijderde bestanden doorgevoerd vanuit feature" || echo "Geen verwijderde bestanden om te committen"
           git push origin development
 
       - name: Merge updated development terug naar feature

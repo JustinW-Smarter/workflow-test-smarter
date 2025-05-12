@@ -70,7 +70,7 @@ jobs:
       - name: Run html-validate
         run: |
           npx html-validate "**/*.html" "**/*.htm" --config htmlvalidate.json --formatter stylish > html-validate-report.txt || true
-          [ -s html-validate-report.txt ] || echo "No HTML issues found." > html-validate-report.txt
+          [ -s html-validate-report.txt ] || echo "" > html-validate-report.txt
           cat html-validate-report.txt
 
       - name: Upload HTML-validate Report as Artifact
@@ -102,7 +102,7 @@ jobs:
           touch stylelint-report.txt
           fi
           npx stylelint --fix "**/*.css" "**/*.scss" "**/*.sass" --config stylelintrc.json --output-file stylelint-report.txt || true
-          [ -s stylelint-report.txt ] || echo "No Stylelint issues found." --output-file stylelint-report.txt
+          [ -s stylelint-report.txt ] || echo "" --output-file stylelint-report.txt
           cat stylelint-report.txt
 
       - name: Upload Stylelint Report as Artifact
@@ -136,7 +136,7 @@ jobs:
             echo "No .ts files found, skipping ESLint for .ts files."
           fi
           npx eslint --fix "**/*.js" "**/*.json" --ignore-pattern package-lock.json --config eslint.config.mjs --output-file eslint-report.txt || true
-          [ -s eslint-report.txt ] || echo "No Javascript issues found." > eslint-report.txt
+          [ -s eslint-report.txt ] || echo "" > eslint-report.txt
           cat eslint-report.txt
 
       - name: Upload ESLint Report as Artifact
@@ -293,7 +293,7 @@ jobs:
 
       - name: Foutcontrole HTML Validate
         run: |
-          ERROR_COUNT=$(grep -Ei "([0-9]+) errors" html-validate-report.txt | sed -E 's/([0-9]+) errors.*/\1/')
+          ERROR_COUNT=$(grep -Ei "error(s)?:" html-validate-report.txt | wc -l)
           echo "Debug: Aantal HTML Validate errors = $ERROR_COUNT" # Debugging line
           if [ "$ERROR_COUNT" -gt 0 ]; then
             echo "❌ HTML Validate vond $ERROR_COUNT fouten"
@@ -302,7 +302,7 @@ jobs:
 
       - name: Foutcontrole Stylelint
         run: |
-          ERROR_COUNT=$(grep -Ei "([0-9]+) errors" stylelint-report.txt | sed -E 's/([0-9]+) errors.*/\1/')
+          ERROR_COUNT=$(grep -Ei "error(s)?" stylelint-report.txt | wc -l)
           echo "Debug: Aantal Stylelint errors = $ERROR_COUNT" # Debugging line
           if [ "$ERROR_COUNT" -gt 0 ]; then
             echo "❌ Stylelint vond $ERROR_COUNT fouten"
@@ -311,7 +311,7 @@ jobs:
 
       - name: Foutcontrole ESLint
         run: |
-          ERROR_COUNT=$(grep -Ei "([0-9]+) errors" eslint-report.txt | sed -E 's/([0-9]+) errors.*/\1/')
+          ERROR_COUNT=$(grep -Ei "✖ [0-9]+ problems \([0-9]+ errors" eslint-report.txt | sed -E 's/.*✖ [0-9]+ problems \([0-9]+ errors, ([0-9]+) warnings\).*/\1/')
           echo "Debug: Aantal ESLint errors = $ERROR_COUNT" # Debugging line
           if [ "$ERROR_COUNT" -gt 0 ]; then
             echo "❌ ESLint vond $ERROR_COUNT fouten"
@@ -334,14 +334,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Download all artifacts via GH CLI
+        run: |
+          if [ ! -f .github/scripts/download-artifacts.sh ]; then
+            echo "❌ Script ontbreekt!"
+            exit 1
+          fi
+          chmod +x .github/scripts/download-artifacts.sh
+          .github/scripts/download-artifacts.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Check .txt output
         run: ls -la
+
+      - name: Zet gedownloade artifacts terug naar root
+        run: |
+          find artifacts -type f -name "*.txt" -size +1c -exec cp {} . \;
+          find artifacts -type f -name "*.sarif" -size +0c -exec cp {} . \;
 
       - name: Upload DevSkim SARIF
         uses: actions/upload-artifact@v4
         with:
           name: devskim-sarif
-          path: devskim-results.sarif
+          path: devskim-report.txt
 
       - name: Upload Linter logs
         uses: actions/upload-artifact@v4

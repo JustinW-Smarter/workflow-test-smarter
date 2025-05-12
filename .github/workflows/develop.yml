@@ -178,35 +178,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download DevSkim Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: devskim-report
-        continue-on-error: true
+      - name: Download all artifacts via GH CLI
+        run: |
+          if [ ! -f .github/scripts/download-artifacts.sh ]; then
+            echo "❌ Script ontbreekt!"
+            exit 1
+          fi
+          chmod +x .github/scripts/download-artifacts.sh
+          .github/scripts/download-artifacts.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download HTML-validate Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: html-validate-report
-        continue-on-error: true
-
-      - name: Download Stylelint Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: stylelint-report
-        continue-on-error: true
-
-      - name: Download ESLint Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: eslint-report
-        continue-on-error: true
-
-      - name: Download PHP Code Sniffer Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: phpcs-report
-        continue-on-error: true
+      - name: Zet gedownloade artifacts terug naar root
+        run: |
+          cp artifacts/*/*.txt . || true
+          cp artifacts/*/*.sarif . || true
 
       - name: DevSkim Results Report
         run: | # Check hier later ook toevoegen als hieronder, wanneer devskim werkt.
@@ -263,38 +249,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [devskim, html-validate, stylelint, eslint, phpcs]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Download all artifacts via GH CLI
+        run: |
+          if [ ! -f .github/scripts/download-artifacts.sh ]; then
+            echo "❌ Script ontbreekt!"
+            exit 1
+          fi
+          chmod +x .github/scripts/download-artifacts.sh
+          .github/scripts/download-artifacts.sh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download DevSkim Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: devskim-report
-        continue-on-error: true
-
-      - name: Download HTML-validate Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: html-validate-report
-        continue-on-error: true
-
-      - name: Download Stylelint Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: stylelint-report
-        continue-on-error: true
-
-      - name: Download ESLint Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: eslint-report
-        continue-on-error: true
-
-      - name: Download PHP Code Sniffer Report Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: phpcs-report
-        continue-on-error: true
+      - name: Zet gedownloade artifacts terug naar root
+        run: |
+          cp artifacts/*/*.txt . || true
+          cp artifacts/*/*.sarif . || true
 
       - name: Controleer op DevSkim errors
         run: |

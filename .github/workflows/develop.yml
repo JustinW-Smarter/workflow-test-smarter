@@ -418,7 +418,7 @@ jobs:
         run: |
           git fetch origin
           git checkout ${{ github.ref_name }}
-          git merge origin/development --no-ff --no-edit || {
+          git merge origin/development --no-ff --no-edit --allow-unrelated-histories || {
             echo "Conflict bij merge van development terug naar feature";
             exit 1;
           }

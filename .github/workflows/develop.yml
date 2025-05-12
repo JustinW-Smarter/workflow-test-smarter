@@ -413,6 +413,7 @@ jobs:
               echo "Conflict bij merge naar development";
               exit 1;
           }
+          git push origin development
 
       - name: Merge updated development terug naar feature
         run: |
@@ -440,3 +441,4 @@ jobs:
           git push origin development
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -77,15 +77,16 @@ jobs:
           
   test-deploy:
     runs-on: ubuntu-latest
+    environment: Testing
   
     steps:
       - name: 🔐 Trigger rsync LIVE webhook
         id: trigger_live
-        run: |
+        run: | # path naar webhook, wanneer in submap deze ook in de url toevoegen
           echo "⏳ Start LIVE rsync webhook call..."
-          RESPONSE=$(curl -s -X POST https://git-dev.smarter.nl/webhook-rsync/webhooks/deploy.php \
+          RESPONSE=$(curl -s -X POST https://git-dev.smarter.nl/webhooks/deploy.php \
             -H "Content-Type: application/json" \
-            -H "X-Smarter-Secret: ${{ secrets.WEBHOOK_SECRET }}" \
+            -H "X-Smarter-Secret: ${{ secrets.WEBHOOK_SECRET_TEST }}" \
             -d '{"ref": "refs/heads/main"}')
           echo "$RESPONSE"
           echo "live_response=$RESPONSE" >> $GITHUB_OUTPUT

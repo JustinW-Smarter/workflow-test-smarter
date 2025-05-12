@@ -416,9 +416,14 @@ jobs:
 
       - name: Forceer verwijdering van verwijderde bestanden
         run: |
-          git ls-files --deleted -z | xargs -0 git rm
-          git commit -m "Verwijderde bestanden doorgevoerd vanuit feature" || echo "Geen verwijderde bestanden om te committen"
-          git push origin development
+          DELETED_FILES=$(git ls-files --deleted)
+          if [ -n "$DELETED_FILES" ]; then
+            echo "$DELETED_FILES" | xargs git rm
+            git commit -m "Verwijderde bestanden doorgevoerd vanuit feature"
+            git push origin development
+          else
+            echo "✅ Geen verwijderde bestanden om te verwerken."
+          fi
 
       - name: Merge updated development terug naar feature
         run: |

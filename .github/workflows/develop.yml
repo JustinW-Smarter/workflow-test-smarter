@@ -416,7 +416,7 @@ jobs:
 
       - name: Forceer verwijdering van verwijderde bestanden
         run: |
-          DELETED_FILES=$(git diff --name-only --diff-filter=D origin/development...${{ github.ref_name }})
+          DELETED_FILES=$(git diff --name-only --diff-filter=D origin/development..${{ github.ref_name }})
           if [ -n "$DELETED_FILES" ]; then
             echo "$DELETED_FILES" | xargs git rm -f || true
             git commit -m "Verwijderingen uit feature doorgevoerd in development"

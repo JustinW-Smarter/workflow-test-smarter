@@ -161,7 +161,7 @@ jobs:
           FILES=$(find . -type f \( -name "*.php" -o -name "*.tpl" -o -name "*.html" -o -name "*.htm" -o -name "*.phtml" -o -name "*.inc" \))
           ~/.composer/vendor/bin/phpcbf --standard=PSR12 $FILES || true
           ~/.composer/vendor/bin/phpcs --standard=PSR12 $FILES > phpcs-report.txt || true
-          [ -s phpcs-report.txt ] || echo "No PHPCS issues found." > phpcs-report.txt
+          [ -s phpcs-report.txt ] || echo "" > phpcs-report.txt
           cat phpcs-report.txt
 
       - name: Upload PHP Code Sniffer Report as Artifact
@@ -209,7 +209,7 @@ jobs:
         continue-on-error: true
 
       - name: DevSkim Results Report
-        run: |
+        run: | # Check hier later ook toevoegen als hieronder, wanneer devskim werkt.
           echo "---- DevSkim SARIF Report Result ----"
           test -f devskim-results.sarif  && cat devskim-results.sarif  || echo "file not found"
           echo "---- -------------------- ----"
@@ -217,25 +217,41 @@ jobs:
       - name: HTML-validate Results Report
         run: |
           echo "---- HTML-validate Report Result ----"
-          cat html-validate-report.txt || echo "TXT file not found"
+          if [ -s html-validate-report.txt ]; then
+            cat html-validate-report.txt
+          else
+            echo "No HTML issues found."
+          fi
           echo "---- -------------------- ----"
 
       - name: Stylelint Results Report
         run: |
           echo "---- Stylelint Report Result ----"
-          cat stylelint-report.txt || echo "TXT file not found"
+          if [ -s stylelint-report.txt ]; then
+            cat stylelint-report.txt
+          else
+            echo "No CSS issues found."
+          fi
           echo "---- -------------------- ----"
 
       - name: Eslint Results Report
         run: |
           echo "---- Eslint Report Result ----"
-          cat eslint-report.txt || echo "TXT file not found"
+          if [ -s eslint-report.txt ]; then
+            cat eslint-report.txt
+          else
+            echo "No Javascript issues found."
+          fi
           echo "---- -------------------- ----"  
 
       - name: PHP Code Sniffer Results Report
         run: |
           echo "---- PHP Code Sniffer Report Result ----"
-          cat phpcs-report.txt || echo "TXT file not found"
+          if [ -s phpcs-report.txt ]; then
+            cat phpcs-report.txt
+          else
+            echo "No PHP issues found."
+          fi
           echo "---- -------------------- ----"
 
   errors:

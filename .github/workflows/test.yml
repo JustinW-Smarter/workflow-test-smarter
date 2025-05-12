@@ -1,0 +1,109 @@
+name: Test Security & Static Analysis
+
+on:
+  push:
+    branches:
+      - test
+  pull_request:
+    branches:
+      - test
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      matrix:
+        language: [ 'php' ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+
+  psalm:
+    name: Psalm Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install dependencies
+        run: composer install --no-progress --no-suggest --prefer-dist
+
+      - name: Run Psalm
+        run: vendor/bin/psalm --output-format=github
+
+  semgrep:
+    name: Semgrep Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+          
+  test-deploy:
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: 🔐 Trigger rsync LIVE webhook
+        id: trigger_live
+        run: |
+          echo "⏳ Start LIVE rsync webhook call..."
+          RESPONSE=$(curl -s -X POST https://git-dev.smarter.nl/webhook-rsync/webhooks/deploy.php \
+            -H "Content-Type: application/json" \
+            -H "X-Smarter-Secret: ${{ secrets.WEBHOOK_SECRET }}" \
+            -d '{"ref": "refs/heads/main"}')
+          echo "$RESPONSE"
+          echo "live_response=$RESPONSE" >> $GITHUB_OUTPUT
+
+      - name: 📤 Toon rsync response
+        run: |
+          echo "---- RSYNC LIVE OUTPUT ----"
+          echo '${{ steps.trigger_live.outputs.live_response }}'
+
+      - name: 📥 Download server log (deploy.log)
+        run: |
+          echo "⬇️ Downloaden van deploy.log..."
+          curl -s https://git.smarter.nl/webhook-rsync/webhooks/deploy.log -o deploy.log
+          echo "✅ Logbestand gedownload. Inhoud:"
+          cat deploy.log
+
+      - name: 📦 Upload logbestand als artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-rsync-log
+          path: deploy.log

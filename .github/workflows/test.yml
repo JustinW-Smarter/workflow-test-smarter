@@ -87,13 +87,21 @@ jobs:
   test-deploy:
     runs-on: ubuntu-latest
     needs: [codeql, dependency-review, psalm, semgrep]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/test'  # Alleen uitvoeren als er een push naar de test branch is
     environment: Testing
-  
+
     steps:
+      - name: Log PR merged status
+        run: |
+          echo "Pull request merged: ${{ github.event.pull_request.merged }}"
+
+      - name: Check if PR was merged
+        if: ${{ github.event.pull_request.merged == 'true' }}
+        run: echo "The pull request was merged successfully."
+
       - name: 🔐 Trigger rsync LIVE webhook
         id: trigger_live
-        run: | # path naar webhook, wanneer in submap deze ook in de url toevoegen
+        if: ${{ github.event.pull_request.merged == 'true' }}  # Alleen uitvoeren als PR gemerged is
+        run: |
           echo "⏳ Start LIVE rsync webhook call..."
           RESPONSE=$(curl -s -X POST https://git-dev.smarter.nl/webhooks/deploy.php \
             -H "Content-Type: application/json" \

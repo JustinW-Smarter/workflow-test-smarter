@@ -1,9 +1,8 @@
 #!/bin/bash
 
-# Zorg dat je in de root zit van de repo
 echo "🔍 Ophalen artifacts van huidige workflow run..."
 
-# Haal de huidige workflow run ID op
+# Haal de laatste run-id op
 RUN_ID=$(gh run list --limit 1 --json databaseId --jq '.[0].databaseId')
 
 if [ -z "$RUN_ID" ]; then
@@ -13,8 +12,8 @@ fi
 
 echo "📦 Workflow Run ID: $RUN_ID"
 
-# Haal alle artifact namen op
-ARTIFACTS=$(gh run artifacts "$RUN_ID" --json name --jq '.[].name')
+# Haal artifact-informatie via de GitHub API
+ARTIFACTS=$(gh api -X GET "repos/${GITHUB_REPOSITORY}/actions/runs/$RUN_ID/artifacts" --jq '.artifacts[].name')
 
 if [ -z "$ARTIFACTS" ]; then
   echo "ℹ️ Geen artifacts gevonden."

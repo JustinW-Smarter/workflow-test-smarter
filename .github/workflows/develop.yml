@@ -336,6 +336,10 @@ jobs:
 
       - name: Download all artifacts via GH CLI
         run: |
+          if [ ! -f .github/scripts/download-artifacts.sh ]; then
+            echo "❌ Script ontbreekt!"
+            exit 1
+          fi
           chmod +x .github/scripts/download-artifacts.sh
           .github/scripts/download-artifacts.sh
         env:

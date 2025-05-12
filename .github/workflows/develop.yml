@@ -348,6 +348,11 @@ jobs:
       - name: Check .txt output
         run: ls -la
 
+      - name: Zet gedownloade artifacts terug naar root
+        run: |
+          cp artifacts/*/*.txt . || true
+          cp artifacts/*/*.sarif . || true
+
       - name: Upload DevSkim SARIF
         uses: actions/upload-artifact@v4
         with:

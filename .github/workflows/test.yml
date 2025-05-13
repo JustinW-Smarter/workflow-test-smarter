@@ -106,39 +106,6 @@ jobs:
       - name: Run Trivy config scan (e.g. PHP, YAML)
         run: trivy config .
 
-  gitleaks:
-    name: GitLeaks Secret Scan
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Install Gitleaks CLI
-        run: |
-          VERSION=$(curl --silent "https://api.github.com/repos/gitleaks/gitleaks/releases/latest" | jq -r .tag_name)
-          FILE="gitleaks_${VERSION}_linux_x64.tar.gz"
-          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/${VERSION}/${FILE}" -o gitleaks.tar.gz
-          tar -xzf gitleaks.tar.gz
-          sudo mv gitleaks /usr/local/bin/
-
-      - name: Run Gitleaks on HEAD (no commit range)
-        run: |
-          gitleaks detect --source=. \
-            --report-format sarif \
-            --report-path gitleaks-report.sarif \
-            --redact
-        continue-on-error: false
-
-      - name: Upload Gitleaks SARIF report
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: gitleaks-report.sarif
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Gitleaks SARIF report
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: gitleaks-report.sarif
-
   detect-secrets:
     name: Detect-Secrets Scan
     runs-on: ubuntu-latest

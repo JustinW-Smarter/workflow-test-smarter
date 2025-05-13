@@ -1,4 +1,4 @@
-name: Test Security & Static Analysis
+name: Test Security, Static Analysis & Deploy naar Test Server
 
 on:
   pull_request:
@@ -16,7 +16,7 @@ on:
 
 jobs:
   codeql:
-    name: CodeQL Analysis
+    name: CodeQL Analysis (kwetsbaarheden in code)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -50,7 +50,7 @@ jobs:
         uses: actions/dependency-review-action@v4
 
   psalm:
-    name: Psalm Static Analysis
+    name: Psalm Static Analysis (fouten en problemen in PHP code)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -60,7 +60,10 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: |
+            - '8.2
+            - '8.3
+            - '8.4
 
       - name: Prepare composer project if needed
         run: |
@@ -73,8 +76,9 @@ jobs:
       - name: Run Psalm
         run: vendor/bin/psalm --output-format=github || echo "Psalm failed or not configured"
 
-  semgrep:
-    name: Semgrep Scan
+  semgrep: # Bijvoorbeeld tokens, keys en wachtwoorden die direct in de code staan
+    name: Semgrep Scan (multi-language rule-based kwetsbaarhedenscan)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -84,8 +88,25 @@ jobs:
         uses: returntocorp/semgrep-action@v1
         with:
           config: auto
+
+  trivy:
+    name: Trivy Project Audit (config files, packages en .env)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.50.1_Linux-64bit.deb
+          sudo dpkg -i trivy_0.50.1_Linux-64bit.deb
+      - name: Run Trivy filesystem scan
+        run: trivy fs . --exit-code 0 --severity MEDIUM,HIGH,CRITICAL --ignore-unfixed
+      - name: Run Trivy config scan (e.g. PHP, YAML)
+        run: trivy config .
           
   test-deploy:
+    name: Deploy naar test server 
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
     environment: Testing
@@ -124,3 +145,47 @@ jobs:
         with:
           name: deploy-rsync-log
           path: deploy.log
+  
+  OWASP-ZAP: # SQL-injection, XSS, Path traversal
+    name: Run OWASP ZAP Scan (XSS, SQLi, etc)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Run OWASP ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.12.0
+        with:
+          target: 'https://git-dev.smarter.nl'
+          fail_action: false
+          report_name: zap-report
+          cmd_options: '-a'
+  
+  Nikto: # Server fouten
+    name: Run Nikto Scan (Webserver Fouten)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Run Nikto
+        run: |
+          docker run --rm sullo/nikto -h https://git-dev.smarter.nl -o nikto-report.txt
+
+  Nuclei: # Overige bekende kwetsbaarheden
+    name: Run Nuclei Scan (kwetsbaarheden)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Prepare targets file
+        run: echo "https://git-dev.smarter.nl" > targets.txt
+      - name: Run Nuclei
+        run: |
+          docker run --rm -v $PWD:/nuclei projectdiscovery/nuclei:latest \
+            -update-templates \
+            -l /nuclei/targets.txt \
+            -o /nuclei/nuclei-report.txt
+
+  Arachni: # Tokens (CSRF)
+    name: Run Arachni Scan (CSRF etc)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Run Arachni
+        run: docker run --rm arachni/arachni https://git-dev.smarter.nl

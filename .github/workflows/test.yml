@@ -207,10 +207,12 @@ jobs:
 
       - name: Run Nuclei
         run: |
-          docker run --rm -v $PWD:/nuclei projectdiscovery/nuclei:latest \
+          docker run --rm -v $PWD:/app projectdiscovery/nuclei:latest \
             -update-templates \
-            -l /nuclei/targets.txt \
-            -o /nuclei/nuclei-report.txt
+            -l /app/targets.txt \
+            -o /app/nuclei-report.txt \
+            -severity high,critical \
+            -silent
 
       - name: Upload Nuclei report
         uses: actions/upload-artifact@v4

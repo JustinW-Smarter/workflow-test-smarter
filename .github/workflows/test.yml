@@ -53,6 +53,9 @@ jobs:
     name: Psalm Static Analysis (fouten en problemen in PHP code)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    strategy:
+      matrix: 
+        php: [ '8.2', '8.3', '8.4' ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,10 +63,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: |
-            - '8.2'
-            - '8.3'
-            - '8.4'
+          php-version: ${{ matrix.php }}
 
       - name: Prepare composer project if needed
         run: |
@@ -116,6 +116,8 @@ jobs:
 
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   detect-secrets:
     name: Detect-Secrets Scan
@@ -214,13 +216,13 @@ jobs:
         run: mkdir -p output
 
       - name: Run Nuclei scan
-        run: |
+        run: | #waarom in /app/?
           docker run --rm -v $PWD:/app projectdiscovery/nuclei:latest \
             -update-templates \
             -l /app/targets.txt \
             -o /app/output/nuclei-report.txt \
             -severity high,critical \
-            -json
+            -silent
 
       - name: Show report if exists
         run: |

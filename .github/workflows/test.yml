@@ -199,28 +199,44 @@ jobs:
             - '-a'
             - '-t 120'
 
-  Nuclei: # Overige bekende kwetsbaarheden
+    Nuclei:
     name: Run Nuclei Scan (kwetsbaarheden)
     runs-on: ubuntu-latest
     needs: [test-deploy]
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Prepare targets file
         run: echo "https://git-dev.smarter.nl" > targets.txt
 
-      - name: Run Nuclei
+      - name: Create output folder
+        run: mkdir -p output
+
+      - name: Run Nuclei scan
         run: |
           docker run --rm -v $PWD:/app projectdiscovery/nuclei:latest \
             -update-templates \
-            -l targets.txt \
-            -o nuclei-report.txt \
+            -l /app/targets.txt \
+            -o /app/output/nuclei-report.txt \
             -severity high,critical \
-            -silent
+            -json
+
+      - name: Show report if exists
+        run: |
+          if [ -f output/nuclei-report.txt ]; then
+            echo "✅ Kwetsbaarheden gevonden:"
+            cat output/nuclei-report.txt
+          else
+            echo "✅ Geen kwetsbaarheden gevonden. Geen report gegenereerd."
+            touch output/nuclei-report.txt
+          fi
 
       - name: Upload Nuclei report
         uses: actions/upload-artifact@v4
         with:
           name: nuclei-report
-          path: nuclei-report.txt
+          path: output/nuclei-report.txt
 
   Nmap:
     name: Nmap Scan (Open poorten, services)

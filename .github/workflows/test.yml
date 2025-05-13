@@ -106,19 +106,6 @@ jobs:
       - name: Run Trivy config scan (e.g. PHP, YAML)
         run: trivy config .
 
-  gitleaks:
-    name: GitLeaks Secret Scan
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   detect-secrets:
     name: Detect-Secrets Scan
     runs-on: ubuntu-latest

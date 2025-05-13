@@ -119,8 +119,8 @@ jobs:
 
       - name: Fetch base branch (test)
         run: git fetch origin ${{ github.event.pull_request.base.ref }}:${{ github.event.pull_request.base.ref }}
-              env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Gitleaks SARIF report
         uses: github/codeql-action/upload-sarif@v2

@@ -17,6 +17,7 @@ on:
 jobs:
   codeql:
     name: CodeQL Analysis
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -50,6 +51,7 @@ jobs:
 
   psalm:
     name: Psalm Static Analysis
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -85,7 +87,7 @@ jobs:
           
   test-deploy:
     runs-on: ubuntu-latest
-    needs: []  # Dit zorgt ervoor dat de test-deploy niet afhankelijk is van andere jobs in de PR
+    if: github.event_name != 'pull_request'
     environment: Testing
 
     steps:

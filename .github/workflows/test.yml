@@ -79,6 +79,7 @@ jobs:
 
   semgrep: # Bijvoorbeeld tokens, keys en wachtwoorden die direct in de code staan
     name: Semgrep Scan (multi-language rule-based kwetsbaarhedenscan)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -91,6 +92,7 @@ jobs:
 
   trivy:
     name: Trivy Project Audit (config files, packages en .env)
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -209,8 +211,8 @@ jobs:
         run: |
           docker run --rm -v $PWD:/app projectdiscovery/nuclei:latest \
             -update-templates \
-            -l /app/targets.txt \
-            -o /app/nuclei-report.txt \
+            -l targets.txt \
+            -o nuclei-report.txt \
             -severity high,critical \
             -silent
 

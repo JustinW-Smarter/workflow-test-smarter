@@ -199,7 +199,7 @@ jobs:
             - '-a'
             - '-t 120'
 
-    Nuclei:
+  Nuclei:
     name: Run Nuclei Scan (kwetsbaarheden)
     runs-on: ubuntu-latest
     needs: [test-deploy]

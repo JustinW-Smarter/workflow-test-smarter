@@ -70,6 +70,7 @@ jobs:
           if [ ! -f composer.json ]; then
             echo '{"name": "smarter/psalm-project", "require-dev": {}, "autoload": {"psr-4": {"App\\\\": "src/"}}}' > composer.json
           fi
+
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist
 
@@ -78,7 +79,6 @@ jobs:
 
   semgrep: # Bijvoorbeeld tokens, keys en wachtwoorden die direct in de code staan
     name: Semgrep Scan (multi-language rule-based kwetsbaarhedenscan)
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -91,7 +91,6 @@ jobs:
 
   trivy:
     name: Trivy Project Audit (config files, packages en .env)
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -104,6 +103,39 @@ jobs:
         run: trivy fs . --exit-code 0 --severity MEDIUM,HIGH,CRITICAL --ignore-unfixed
       - name: Run Trivy config scan (e.g. PHP, YAML)
         run: trivy config .
+
+  gitleaks:
+    name: GitLeaks Secret Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+
+  detect-secrets:
+    name: Detect-Secrets Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Install detect-secrets
+        run: pip install detect-secrets
+      - name: Scan repo with detect-secrets
+        run: |
+          detect-secrets scan > .secrets.baseline
+          detect-secrets audit .secrets.baseline --report --json > secrets-report.json || echo "Secrets found"
+      - name: Upload detect-secrets report
+        uses: actions/upload-artifact@v4
+        with:
+          name: detect-secrets-report
+          path: secrets-report.json
           
   test-deploy:
     name: Deploy naar test server 
@@ -157,16 +189,9 @@ jobs:
           target: 'https://git-dev.smarter.nl'
           fail_action: false
           report_name: zap-report
-          cmd_options: '-a'
-  
-  Nikto: # Server fouten
-    name: Run Nikto Scan (Webserver Fouten)
-    runs-on: ubuntu-latest
-    needs: [test-deploy]
-    steps:
-      - name: Run Nikto
-        run: |
-          docker run --rm sullo/nikto -h https://git-dev.smarter.nl -o nikto-report.txt
+          cmd_options: |
+            - '-a'
+            - '-t 120'
 
   Nuclei: # Overige bekende kwetsbaarheden
     name: Run Nuclei Scan (kwetsbaarheden)
@@ -182,10 +207,18 @@ jobs:
             -l /nuclei/targets.txt \
             -o /nuclei/nuclei-report.txt
 
-  Arachni: # Tokens (CSRF)
-    name: Run Arachni Scan (CSRF etc)
+  Nmap:
+    name: Nmap Scan (Open poorten, services)
     runs-on: ubuntu-latest
     needs: [test-deploy]
     steps:
-      - name: Run Arachni
-        run: docker run --rm arachni/arachni https://git-dev.smarter.nl
+      - name: Install Nmap
+        run: sudo apt-get update && sudo apt-get install -y nmap
+      - name: Run Nmap
+        run: |
+          nmap -Pn -sV -oN nmap-report.txt git-dev.smarter.nl
+      - name: Upload Nmap report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nmap-report
+          path: nmap-report.txt

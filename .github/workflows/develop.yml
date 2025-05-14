@@ -450,7 +450,18 @@ jobs:
           echo "Laatste tag: $latest_tag"
 
           # Zoek laatste échte menselijke merge commit naar development
-          last_merge_commit=$(git log origin/development --merges --pretty="%H %an" | grep -v "github-actions" | head -n 1 | cut -d' ' -f1)
+          last_merge_commit=$(git log origin/development --merges --pretty=format:"%H" | while read commit; do
+            author=$(git show -s --format='%an' $commit)
+            if [[ "$author" != *"[bot]"* ]]; then
+              parents=$(git show -s --pretty=format:"%P" $commit)
+              feature_commit=$(echo $parents | awk '{print $2}')
+              branch_name=$(git name-rev --name-only $feature_commit 2>/dev/null)
+              if [[ "$branch_name" == feature/* ]]; then
+                echo $commit
+                break
+              fi
+            fi
+          done)
 
           # Vind feature commit in de merge
           merged_commit=$(git log -1 --pretty=format:"%P" $last_merge_commit | awk '{print $2}')

@@ -475,7 +475,7 @@ jobs:
           echo "$commits"
           
           # Neem alleen de eerste regel (committype: titel) en pak het gedeelte vóór de `:`
-          commit_type=$(echo "$commits" | head -n 1 | cut -d':' -f1 | tr '[:upper:]' '[:lower:]' | xargs))
+          commit_type=$(echo "$commits" | head -n 1 | cut -d':' -f1 | tr '[:upper:]' '[:lower:]' | xargs)
           
           echo "🔍 Extracted commit type: \"$commit_type\""
         
@@ -498,8 +498,8 @@ jobs:
             patch=1
             echo "➡️  Detected: UPDATE → patch=1"
           elif [[ "$commit_type" == "doc"* ]]; then
-            patch=1
-            echo "➡️  Detected: DOC → patch=1"
+            minor=0
+            echo "➡️  Detected: DOC → minor=0"
           elif [[ "$commit_type" == "refactor"* ]]; then
             minor=0
             echo "➡️  Detected: REFACTOR → minor=0"

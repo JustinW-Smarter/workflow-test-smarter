@@ -456,11 +456,11 @@ jobs:
           merged_commit=$(git log -1 --pretty=format:"%P" $last_merge_commit | awk '{print $2}')
           
           # Haal de volledige commit message op
-          commits=$(git log ${merged_commit}^..${merged_commit} --pretty=format:"%B")
+          commits=$(git log -1 --pretty=format:"%B" $merged_commit)
           
           # Neem alleen de eerste regel (committype: titel) en pak het gedeelte vóór de `:`
           commit_type=$(echo "$commits" | head -n 1 | cut -d':' -f1 | tr '[:upper:]' '[:lower:]')
-        
+          
           echo "🔍 Evaluating commit type: \"$commit_type\""
         
           # Initieel alles op 0

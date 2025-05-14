@@ -54,7 +54,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
-      matrix: 
+      matrix:
         php: [ '8.2', '8.3', '8.4' ]
     steps:
       - name: Checkout code
@@ -132,20 +132,17 @@ jobs:
         with:
           name: detect-secrets-report
           path: secrets-report.json
-          
+
   test-deploy:
-    name: Deploy naar test server 
+    name: Deploy naar test server
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/test' && github.event_name == 'push'
     environment: Testing
 
     steps:
       - name: Log PR merged status
         run: |
           echo "Pull request merged: ${{ github.event.pull_request.merged }}"
-      - name: Check if PR was merged
-        if: ${{ github.event.pull_request.merged == 'true' }}
-        run: echo "The pull request was merged successfully."
 
       - name: 🔐 Trigger rsync LIVE webhook
         id: trigger_live
@@ -173,7 +170,7 @@ jobs:
         with:
           name: deploy-rsync-log
           path: deploy.log
-  
+
   OWASP-ZAP: # SQL-injection, XSS, Path traversal
     name: Run OWASP ZAP Scan (XSS, SQLi, etc)
     runs-on: ubuntu-latest

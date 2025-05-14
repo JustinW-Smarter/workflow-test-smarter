@@ -475,57 +475,39 @@ jobs:
           
             # Controleer of het een feature is
             elif [[ "$commit_lower" == feature:* || "$commit_lower" == *"feature"* ]]; then
-              if [[ $major -eq 0 ]]; then
-                minor=1
-              fi
+              minor=1
           
             # Controleer of het een bugfix is
             elif [[ "$commit_lower" == bugfix:* || "$commit_lower" == *"bugfix"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then
-                patch=1
-              fi
+              patch=1
           
             # Controleer of het een update is
             elif [[ "$commit_lower" == update:* || "$commit_lower" == *"update"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then
-                patch=1
-              fi
+              patch=1
           
             # Controleer of het een documentatie wijziging is
             elif [[ "$commit_lower" == doc:* || "$commit_lower" == *"doc"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then
-                patch=1
-              fi
+              patch=1
           
             # Controleer of het een refactor is
             elif [[ "$commit_lower" == refactor:* || "$commit_lower" == *"refactor"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then
-                patch=1
-              fi
+              patch=1
           
             # Controleer of het een style wijziging is
             elif [[ "$commit_lower" == style:* || "$commit_lower" == *"style"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then
-                minor=1
-              fi
+              minor=1
           
             # Controleer of het een test is
             elif [[ "$commit_lower" == test:* || "$commit_lower" == *"test"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then
-                patch=1
-              fi
+              patch=1
           
             # Controleer of het een CI/CD wijziging is
-            elif [[ "$commit_lower" == ci-cd:* || "$commit_lower" == *"ci-cd"* || "$commit_lower" == *"ci/cd"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then
-                patch=1
-              fi
+            elif [[ "$commit_lower" == ci-cd:* || "$commit_lower" == *"ci-cd"* || "$commit_lower" == *"ci/cd"* || "$commit_lower" == *"ci_cd"* ]]; then
+              patch=1
           
             # Controleer of het een revert is
             elif [[ "$commit_lower" == revert:* || "$commit_lower" == *"revert"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then
-                patch=1
-              fi
+              patch=1
             fi
           done
           

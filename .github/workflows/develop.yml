@@ -454,54 +454,53 @@ jobs:
 
           # Vind feature commit in de merge
           merged_commit=$(git log -1 --pretty=format:"%P" $last_merge_commit | awk '{print $2}')
-
-          # Haal volledige commit message op
+          
+          # Haal de volledige commit message op
           commits=$(git log ${merged_commit}^..${merged_commit} --pretty=format:"%B")
           
-          # Neem alleen de laatste regel (echte inhoudelijke commit message)
-          commit=$(echo "$commits" | tail -n 1)
-          commit_lower=$(echo "$commit" | tr '[:upper:]' '[:lower:]')
-
-          echo "🔍 Evaluating last commit line: \"$commit_lower\""
-
-          # Initieel
-            major=0
-            minor=0
-            patch=0
+          # Neem alleen de eerste regel (committype: titel) en pak het gedeelte vóór de `:`
+          commit_type=$(echo "$commits" | head -n 1 | cut -d':' -f1 | tr '[:upper:]' '[:lower:]')
+        
+          echo "🔍 Evaluating commit type: \"$commit_type\""
+        
+          # Initieel alles op 0
+          major=0
+          minor=0
+          patch=0
           
-          # Detecteer type
-          if [[ "$commit_lower" == *"feat!"* || "$commit_lower" == *"breaking change"* || "$commit_lower" == *"breaking:"* || "$commit_lower" == *"💥"* ]]; then
+          # Controleer het commit type
+          if [[ "$commit_type" == "feat!"* || "$commit_type" == "breaking change"* || "$commit_type" == "breaking:"* || "$commit_type" == "💥"* ]]; then
             major=1
             echo "➡️  Detected: BREAKING CHANGE → major=1"
-          elif [[ "$commit_lower" == feat:* || "$commit_lower" == *"feat"* ]]; then
+          elif [[ "$commit_type" == "feat"* ]]; then
             minor=1
             echo "➡️  Detected: FEATURE → minor=1"
-          elif [[ "$commit_lower" == bugfix:* || "$commit_lower" == *"bugfix"* ]]; then
+          elif [[ "$commit_type" == "bugfix"* ]]; then
             patch=1
             echo "➡️  Detected: BUGFIX → patch=1"
-          elif [[ "$commit_lower" == update:* || "$commit_lower" == *"update"* ]]; then
+          elif [[ "$commit_type" == "update"* ]]; then
             patch=1
             echo "➡️  Detected: UPDATE → patch=1"
-          elif [[ "$commit_lower" == doc:* || "$commit_lower" == *"doc"* ]]; then
+          elif [[ "$commit_type" == "doc"* ]]; then
             patch=1
             echo "➡️  Detected: DOC → patch=1"
-          elif [[ "$commit_lower" == refactor:* || "$commit_lower" == *"refactor"* ]]; then
-            patch=1
-            echo "➡️  Detected: REFACTOR → patch=1"
-          elif [[ "$commit_lower" == style:* || "$commit_lower" == *"style"* ]]; then
+          elif [[ "$commit_type" == "refactor"* ]]; then
+            minor=0
+            echo "➡️  Detected: REFACTOR → minor=0"
+          elif [[ "$commit_type" == "style"* ]]; then
             minor=1
             echo "➡️  Detected: STYLE → minor=1"
-          elif [[ "$commit_lower" == test:* || "$commit_lower" == *"test"* ]]; then
+          elif [[ "$commit_type" == "test"* ]]; then
             patch=1
             echo "➡️  Detected: TEST → patch=1"
-          elif [[ "$commit_lower" == ci-cd:* || "$commit_lower" == *"ci-cd"* || "$commit_lower" == *"ci/cd"* || "$commit_lower" == *"ci_cd"* ]]; then
+          elif [[ "$commit_type" == "ci-cd"* || "$commit_type" == "ci/cd"* || "$commit_type" == "ci_cd"* ]]; then
             patch=1
             echo "➡️  Detected: CI/CD → patch=1"
-          elif [[ "$commit_lower" == revert:* || "$commit_lower" == *"revert"* ]]; then
+          elif [[ "$commit_type" == "revert"* ]]; then
             patch=1
             echo "➡️  Detected: REVERT → patch=1"
           else
-            echo "⚠️  No known type matched for: \"$commit_lower\""
+            echo "⚠️  No known type matched for: \"$commit_type\""
           fi
           
           # Versie-instellingen voor major, minor en patch
@@ -521,7 +520,7 @@ jobs:
             echo "bump=no" >> $GITHUB_OUTPUT
             exit 0
           fi
-
+          
           new_tag="v${v_major}.${v_minor}.${v_patch}"
           echo "new_tag=${new_tag}" >> $GITHUB_OUTPUT
           echo "bump=yes" >> $GITHUB_OUTPUT

@@ -488,7 +488,7 @@ jobs:
           if [[ "$commit_type" == "feat!"* || "$commit_type" == "breaking change"* || "$commit_type" == "breaking:"* || "$commit_type" == "💥"* ]]; then
             major=1
             echo "➡️  Detected: BREAKING CHANGE → major=1"
-          elif [[ "$commit_type" == "feat"* ]]; then
+          elif [[ "$commit_type" == "feature"* || "$commit_type" == "feat"* ]]; then
             minor=1
             echo "➡️  Detected: FEATURE → minor=1"
           elif [[ "$commit_type" == "bugfix"* ]]; then
@@ -501,8 +501,8 @@ jobs:
             minor=0
             echo "➡️  Detected: DOC → minor=0"
           elif [[ "$commit_type" == "refactor"* ]]; then
-            minor=0
-            echo "➡️  Detected: REFACTOR → minor=0"
+            patch=1
+            echo "➡️  Detected: REFACTOR → patch=1"
           elif [[ "$commit_type" == "style"* ]]; then
             minor=1
             echo "➡️  Detected: STYLE → minor=1"

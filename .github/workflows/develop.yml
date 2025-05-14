@@ -449,8 +449,8 @@ jobs:
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
           echo "Laatste tag: $latest_tag"
 
-          # Zoek laatste merge commit naar development
-          last_merge_commit=$(git log origin/development --merges -n 1 --pretty=format:"%H")
+          # Zoek laatste échte menselijke merge commit naar development
+          last_merge_commit=$(git log origin/development --merges --pretty="%H %an" | grep -v "github-actions" | head -n 1 | cut -d' ' -f1)
 
           # Vind feature commit in de merge
           merged_commit=$(git log -1 --pretty=format:"%P" $last_merge_commit | awk '{print $2}')
@@ -458,7 +458,9 @@ jobs:
           # Haal de volledige commit message op
           commits=$(git log -1 --pretty=format:"%B" $merged_commit)
           
-          echo "⏬ Full commit message:"
+          echo "🎯 Using merge commit: $last_merge_commit"
+          echo "📌 Extracted feature commit: $merged_commit"
+          echo "📩 Commit message:"
           echo "$commits"
           
           # Neem alleen de eerste regel (committype: titel) en pak het gedeelte vóór de `:`

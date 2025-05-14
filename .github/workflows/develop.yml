@@ -485,7 +485,7 @@ jobs:
           patch=0
           
           # Controleer het commit type
-          if [[ "$commit_type" == "feat!"* || "$commit_type" == "breaking change"* || "$commit_type" == "breaking:"* || "$commit_type" == "💥"* ]]; then
+          if [[ "$commit_type" == "feat!"* || "$commit_type" == "breaking change"* || "$commit_type" == "breaking"* || "$commit_type" == "💥"* ]]; then
             major=1
             echo "➡️  Detected: BREAKING CHANGE → major=1"
           elif [[ "$commit_type" == "feature"* || "$commit_type" == "feat"* ]]; then

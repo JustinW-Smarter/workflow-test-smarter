@@ -468,32 +468,70 @@ jobs:
 
           for commit in $commits; do
             commit_lower=$(echo "$commit" | tr '[:upper:]' '[:lower:]')
-
+          
+            # Controleer of het een breaking change is
             if [[ "$commit_lower" == *"feat!"* || "$commit_lower" == *"breaking change"* || "$commit_lower" == *"breaking:"* || "$commit_lower" == *"💥"* ]]; then
               major=1
+          
+            # Controleer of het een feature is
             elif [[ "$commit_lower" == feature:* || "$commit_lower" == *"feature"* ]]; then
-              if [[ $major -eq 0 ]]; then minor=1; fi
+              if [[ $major -eq 0 ]]; then
+                minor=1
+              fi
+          
+            # Controleer of het een bugfix is
             elif [[ "$commit_lower" == bugfix:* || "$commit_lower" == *"bugfix"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then patch=1; fi
+              if [[ $major -eq 0 && $minor -eq 0 ]]; then
+                patch=1
+              fi
+          
+            # Controleer of het een update is
             elif [[ "$commit_lower" == update:* || "$commit_lower" == *"update"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then patch=1; fi
+              if [[ $major -eq 0 && $minor -eq 0 ]]; then
+                patch=1
+              fi
+          
+            # Controleer of het een documentatie wijziging is
             elif [[ "$commit_lower" == doc:* || "$commit_lower" == *"doc"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then patch=1; fi
+              if [[ $major -eq 0 && $minor -eq 0 ]]; then
+                patch=1
+              fi
+          
+            # Controleer of het een refactor is
             elif [[ "$commit_lower" == refactor:* || "$commit_lower" == *"refactor"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then patch=1; fi
+              if [[ $major -eq 0 && $minor -eq 0 ]]; then
+                patch=1
+              fi
+          
+            # Controleer of het een style wijziging is
             elif [[ "$commit_lower" == style:* || "$commit_lower" == *"style"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then minor=1; fi
+              if [[ $major -eq 0 && $minor -eq 0 ]]; then
+                minor=1
+              fi
+          
+            # Controleer of het een test is
             elif [[ "$commit_lower" == test:* || "$commit_lower" == *"test"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then patch=1; fi
+              if [[ $major -eq 0 && $minor -eq 0 ]]; then
+                patch=1
+              fi
+          
+            # Controleer of het een CI/CD wijziging is
             elif [[ "$commit_lower" == ci-cd:* || "$commit_lower" == *"ci-cd"* || "$commit_lower" == *"ci/cd"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then patch=1; fi
+              if [[ $major -eq 0 && $minor -eq 0 ]]; then
+                patch=1
+              fi
+          
+            # Controleer of het een revert is
             elif [[ "$commit_lower" == revert:* || "$commit_lower" == *"revert"* ]]; then
-              if [[ $major -eq 0 && $minor -eq 0 ]]; then patch=1; fi
+              if [[ $major -eq 0 && $minor -eq 0 ]]; then
+                patch=1
+              fi
             fi
           done
-
+          
+          # Versie-instellingen voor major, minor en patch
           IFS='.' read -r v_major v_minor v_patch <<< "${latest_tag#v}"
-
+          
           if [[ $major -eq 1 ]]; then
             v_major=$((v_major + 1))
             v_minor=0

@@ -475,7 +475,7 @@ jobs:
           echo "$commits"
           
           # Neem alleen de eerste regel (committype: titel) en pak het gedeelte vóór de `:`
-          commit_type=$(echo "$commits" | head -n 1 | cut -d':' -f1 | tr '[:upper:]' '[:lower:]')
+          commit_type=$(echo "$commits" | head -n 1 | cut -d':' -f1 | tr '[:upper:]' '[:lower:]' | xargs))
           
           echo "🔍 Extracted commit type: \"$commit_type\""
         

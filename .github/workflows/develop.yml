@@ -469,43 +469,24 @@ jobs:
           for commit in $commits; do
             commit_lower=$(echo "$commit" | tr '[:upper:]' '[:lower:]')
           
-            # Controleer of het een breaking change is
             if [[ "$commit_lower" == *"feat!"* || "$commit_lower" == *"breaking change"* || "$commit_lower" == *"breaking:"* || "$commit_lower" == *"💥"* ]]; then
               major=1
-          
-            # Controleer of het een feature is
             elif [[ "$commit_lower" == feature:* || "$commit_lower" == *"feature"* ]]; then
               minor=1
-          
-            # Controleer of het een bugfix is
             elif [[ "$commit_lower" == bugfix:* || "$commit_lower" == *"bugfix"* ]]; then
               patch=1
-          
-            # Controleer of het een update is
             elif [[ "$commit_lower" == update:* || "$commit_lower" == *"update"* ]]; then
               patch=1
-          
-            # Controleer of het een documentatie wijziging is
             elif [[ "$commit_lower" == doc:* || "$commit_lower" == *"doc"* ]]; then
-              patch=1
-          
-            # Controleer of het een refactor is
+              minor=0
             elif [[ "$commit_lower" == refactor:* || "$commit_lower" == *"refactor"* ]]; then
               patch=1
-          
-            # Controleer of het een style wijziging is
             elif [[ "$commit_lower" == style:* || "$commit_lower" == *"style"* ]]; then
               minor=1
-          
-            # Controleer of het een test is
             elif [[ "$commit_lower" == test:* || "$commit_lower" == *"test"* ]]; then
               patch=1
-          
-            # Controleer of het een CI/CD wijziging is
             elif [[ "$commit_lower" == ci-cd:* || "$commit_lower" == *"ci-cd"* || "$commit_lower" == *"ci/cd"* || "$commit_lower" == *"ci_cd"* ]]; then
               patch=1
-          
-            # Controleer of het een revert is
             elif [[ "$commit_lower" == revert:* || "$commit_lower" == *"revert"* ]]; then
               patch=1
             fi

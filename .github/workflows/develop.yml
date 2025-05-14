@@ -472,7 +472,7 @@ jobs:
             if [[ "$commit_lower" == *"feat!"* || "$commit_lower" == *"breaking change"* || "$commit_lower" == *"breaking:"* || "$commit_lower" == *"💥"* ]]; then
               major=1
               echo "➡️  Detected: BREAKING CHANGE → major=1"
-            elif [[ "$commit_lower" == feature:* || "$commit_lower" == *"feature"* ]]; then
+            elif [[ "$commit_lower" == feature:* || "$commit_lower" == *"feat"* ]]; then
               minor=1
               echo "➡️  Detected: FEATURE → minor=1"
             elif [[ "$commit_lower" == bugfix:* || "$commit_lower" == *"bugfix"* ]]; then
@@ -499,6 +499,8 @@ jobs:
             elif [[ "$commit_lower" == revert:* || "$commit_lower" == *"revert"* ]]; then
               patch=1
               echo "➡️  Detected: REVERT → patch=1"
+            else
+              echo "⚠️  No known type matched for this commit."
             fi
           done
           

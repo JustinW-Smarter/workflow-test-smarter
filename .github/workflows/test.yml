@@ -136,13 +136,19 @@ jobs:
   test-deploy:
     name: Deploy naar test server
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/test' && github.event_name == 'push'
+    if: github.event_name != 'pull_request'
     environment: Testing
+
+      echo "Testing & Deploying"
 
     steps:
       - name: Log PR merged status
         run: |
           echo "Pull request merged: ${{ github.event.pull_request.merged }}"
+
+      - name: Check if PR was merged
+        if: ${{ github.event.pull_request.merged == 'true' }}
+        run: echo "The pull request was merged successfully."
 
       - name: 🔐 Trigger rsync LIVE webhook
         id: trigger_live

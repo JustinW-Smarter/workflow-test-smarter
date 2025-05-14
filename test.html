@@ -1,10 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <title>Title</title>
+  <title>Welkom bij Smarter Projects</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      background-color: #f4f4f4;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .btn {
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn:hover {
+      background-color: #0056b3;
+    }
+
+    form {
+      margin-top: 2rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    input[type="email"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+  </style>
 </head>
 <body>
+
+<h1>Welkom bij Smarter Projects</h1>
+<p>Deze pagina wordt gebruikt als voorbeeld om de HTML- en CSS-validatie te controleren.</p>
+
+<button class="btn" type="button" onclick="sayHello()">Klik hier</button>
+
+<form>
+  <label for="email">E-mailadres:</label>
+  <input type="email" id="email" name="email" placeholder="je@voorbeeld.nl" required>
+</form>
+
+<script>
+  function sayHello() {
+    alert("Welkom bij Smarter Projects!");
+  }
+</script>
 
 </body>
 </html>

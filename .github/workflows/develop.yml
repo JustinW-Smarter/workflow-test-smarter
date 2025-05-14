@@ -471,24 +471,34 @@ jobs:
           
             if [[ "$commit_lower" == *"feat!"* || "$commit_lower" == *"breaking change"* || "$commit_lower" == *"breaking:"* || "$commit_lower" == *"💥"* ]]; then
               major=1
+              echo "➡️  Detected: BREAKING CHANGE → major=1"
             elif [[ "$commit_lower" == feature:* || "$commit_lower" == *"feature"* ]]; then
               minor=1
+              echo "➡️  Detected: FEATURE → minor=1"
             elif [[ "$commit_lower" == bugfix:* || "$commit_lower" == *"bugfix"* ]]; then
               patch=1
+              echo "➡️  Detected: BUGFIX → patch=1"
             elif [[ "$commit_lower" == update:* || "$commit_lower" == *"update"* ]]; then
               patch=1
+              echo "➡️  Detected: UPDATE → patch=1"
             elif [[ "$commit_lower" == doc:* || "$commit_lower" == *"doc"* ]]; then
               minor=0
+              echo "➡️  Detected: DOC → minor=0"
             elif [[ "$commit_lower" == refactor:* || "$commit_lower" == *"refactor"* ]]; then
               patch=1
+              echo "➡️  Detected: REFACTOR → patch=1"
             elif [[ "$commit_lower" == style:* || "$commit_lower" == *"style"* ]]; then
               minor=1
+              echo "➡️  Detected: STYLE → minor=1"
             elif [[ "$commit_lower" == test:* || "$commit_lower" == *"test"* ]]; then
               patch=1
+              echo "➡️  Detected: TEST → patch=1"
             elif [[ "$commit_lower" == ci-cd:* || "$commit_lower" == *"ci-cd"* || "$commit_lower" == *"ci/cd"* || "$commit_lower" == *"ci_cd"* ]]; then
               patch=1
+              echo "➡️  Detected: CI/CD → patch=1"
             elif [[ "$commit_lower" == revert:* || "$commit_lower" == *"revert"* ]]; then
               patch=1
+              echo "➡️  Detected: REVERT → patch=1"
             fi
           done
           

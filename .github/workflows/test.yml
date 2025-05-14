@@ -1,0 +1,247 @@
+name: Test Security, Static Analysis & Deploy naar Test Server
+
+on:
+  pull_request:
+    branches:
+      - test
+    types:
+      - opened
+      - synchronize
+    paths-ignore:
+      - .github/workflows/develop.yml
+
+  push:
+    branches:
+      - test  # Trigger de deploy alleen wanneer er een push naar de test branch is (na merge)
+
+jobs:
+  codeql:
+    name: CodeQL Analysis (kwetsbaarheden in code)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      matrix:
+        language: [ 'javascript', 'javascript-typescript' ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+
+  psalm:
+    name: Psalm Static Analysis (fouten en problemen in PHP code)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: 
+        php: [ '8.2', '8.3', '8.4' ]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Prepare composer project if needed
+        run: |
+          if [ ! -f composer.json ]; then
+            echo '{"name": "smarter/psalm-project", "require-dev": {}, "autoload": {"psr-4": {"App\\\\": "src/"}}}' > composer.json
+          fi
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Run Psalm
+        run: vendor/bin/psalm --output-format=github || echo "Psalm failed or not configured"
+
+  semgrep: # Bijvoorbeeld tokens, keys en wachtwoorden die direct in de code staan
+    name: Semgrep Scan (multi-language rule-based kwetsbaarhedenscan)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+
+  trivy:
+    name: Trivy Project Audit (config files, packages en .env)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Run Trivy filesystem scan
+        run: trivy fs . --exit-code 0 --severity MEDIUM,HIGH,CRITICAL --ignore-unfixed
+
+      - name: Run Trivy config scan (e.g. PHP, YAML)
+        run: trivy config .
+
+  detect-secrets:
+    name: Detect-Secrets Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install detect-secrets
+        run: pip install detect-secrets
+
+      - name: Scan repo with detect-secrets
+        run: |
+          detect-secrets scan > .secrets.baseline
+          detect-secrets audit .secrets.baseline --report --json > secrets-report.json || echo "Secrets found"
+
+      - name: Upload detect-secrets report
+        uses: actions/upload-artifact@v4
+        with:
+          name: detect-secrets-report
+          path: secrets-report.json
+          
+  test-deploy:
+    name: Deploy naar test server 
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    environment: Testing
+
+    steps:
+      - name: Log PR merged status
+        run: |
+          echo "Pull request merged: ${{ github.event.pull_request.merged }}"
+      - name: Check if PR was merged
+        if: ${{ github.event.pull_request.merged == 'true' }}
+        run: echo "The pull request was merged successfully."
+
+      - name: 🔐 Trigger rsync LIVE webhook
+        id: trigger_live
+        if: ${{ github.event_name == 'push' }}  # Alleen uitvoeren bij een push naar de test branch (na merge)
+        run: |
+          echo "⏳ Start LIVE rsync webhook call..."
+          RESPONSE=$(curl -s -X POST https://git-dev.smarter.nl/webhooks/deploy.php \
+            -H "Content-Type: application/json" \
+            -H "X-Smarter-Secret: ${{ secrets.WEBHOOK_SECRET_TEST }}" \
+            -d '{"ref": "refs/heads/test"}')
+          echo "$RESPONSE"
+          echo "live_response=$RESPONSE" >> $GITHUB_OUTPUT
+      - name: 📤 Toon rsync response
+        run: |
+          echo "---- RSYNC LIVE OUTPUT ----"
+          echo '${{ steps.trigger_live.outputs.live_response }}'
+      - name: 📥 Download server log (deploy.log)
+        run: |
+          echo "⬇️ Downloaden van deploy.log..."
+          curl -s https://git-dev.smarter.nl/webhook-rsync/webhooks/deploy.log -o deploy.log
+          echo "✅ Logbestand gedownload. Inhoud:"
+          cat deploy.log
+      - name: 📦 Upload logbestand als artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-rsync-log
+          path: deploy.log
+  
+  OWASP-ZAP: # SQL-injection, XSS, Path traversal
+    name: Run OWASP ZAP Scan (XSS, SQLi, etc)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Run OWASP ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.12.0
+        with:
+          target: 'https://git-dev.smarter.nl'
+          fail_action: false
+          cmd_options: |
+            - '-a'
+            - '-t 120'
+
+  Nuclei:
+    name: Run Nuclei Scan (kwetsbaarheden)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare targets file
+        run: echo "https://git-dev.smarter.nl" > targets.txt
+
+      - name: Create output folder
+        run: mkdir -p output
+
+      - name: Run Nuclei scan
+        run: | #waarom in /app/?
+          docker run --rm -v $PWD:/app projectdiscovery/nuclei:latest \
+            -update-templates \
+            -l /app/targets.txt \
+            -o /app/output/nuclei-report.txt \
+            -severity high,critical \
+            -silent
+
+      - name: Show report if exists
+        run: |
+          if [ -f output/nuclei-report.txt ]; then
+            echo "✅ Kwetsbaarheden gevonden:"
+            cat output/nuclei-report.txt
+          else
+            echo "✅ Geen kwetsbaarheden gevonden. Geen report gegenereerd."
+            touch output/nuclei-report.txt
+          fi
+
+      - name: Upload Nuclei report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuclei-report
+          path: output/nuclei-report.txt
+
+  Nmap:
+    name: Nmap Scan (Open poorten, services)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Install Nmap
+        run: sudo apt-get update && sudo apt-get install -y nmap
+
+      - name: Run Nmap
+        run: |
+          nmap -Pn -sV -oN nmap-report.txt git-dev.smarter.nl
+
+      - name: Upload Nmap report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nmap-report
+          path: nmap-report.txt
+

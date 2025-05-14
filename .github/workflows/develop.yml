@@ -458,10 +458,13 @@ jobs:
           # Haal de volledige commit message op
           commits=$(git log -1 --pretty=format:"%B" $merged_commit)
           
+          echo "⏬ Full commit message:"
+          echo "$commits"
+          
           # Neem alleen de eerste regel (committype: titel) en pak het gedeelte vóór de `:`
           commit_type=$(echo "$commits" | head -n 1 | cut -d':' -f1 | tr '[:upper:]' '[:lower:]')
           
-          echo "🔍 Evaluating commit type: \"$commit_type\""
+          echo "🔍 Extracted commit type: \"$commit_type\""
         
           # Initieel alles op 0
           major=0

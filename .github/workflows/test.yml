@@ -139,11 +139,10 @@ jobs:
     if: github.event_name != 'pull_request'
     environment: Testing
 
-      echo "Testing & Deploying"
-
     steps:
       - name: Log PR merged status
         run: |
+          echo "Testing & Deploying"
           echo "Pull request merged: ${{ github.event.pull_request.merged }}"
 
       - name: Check if PR was merged

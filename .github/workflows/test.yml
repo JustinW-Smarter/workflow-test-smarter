@@ -152,7 +152,7 @@ jobs:
 
       - name: 🔐 Trigger rsync LIVE webhook
         id: trigger_live
-        if: ${{ github.event_name == 'push' }}  # Alleen uitvoeren bij een push naar de test branch (na merge)
+        if: ${{ github.event.pull_request.merged == true }}  # Alleen uitvoeren bij een push naar de test branch (na merge)
         run: |
           echo "⏳ Start LIVE rsync webhook call..."
           RESPONSE=$(curl -s -X POST https://git-dev.smarter.nl/webhooks/deploy.php \
@@ -161,16 +161,19 @@ jobs:
             -d '{"ref": "refs/heads/test"}')
           echo "$RESPONSE"
           echo "live_response=$RESPONSE" >> $GITHUB_OUTPUT
+
       - name: 📤 Toon rsync response
         run: |
           echo "---- RSYNC LIVE OUTPUT ----"
           echo '${{ steps.trigger_live.outputs.live_response }}'
+
       - name: 📥 Download server log (deploy.log)
         run: |
           echo "⬇️ Downloaden van deploy.log..."
           curl -s https://git-dev.smarter.nl/webhook-rsync/webhooks/deploy.log -o deploy.log
           echo "✅ Logbestand gedownload. Inhoud:"
           cat deploy.log
+
       - name: 📦 Upload logbestand als artifact
         uses: actions/upload-artifact@v4
         with:

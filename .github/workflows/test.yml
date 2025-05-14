@@ -7,6 +7,7 @@ on:
     types:
       - opened
       - synchronize
+      - closed
     paths-ignore:
       - .github/workflows/develop.yml
 
@@ -136,7 +137,7 @@ jobs:
   test-deploy:
     name: Deploy naar test server
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
     environment: Testing
 
     steps:
@@ -146,7 +147,7 @@ jobs:
           echo "Pull request merged: ${{ github.event.pull_request.merged }}"
 
       - name: Check if PR was merged
-        if: ${{ github.event.pull_request.merged == 'true' }}
+        if: ${{ github.event.pull_request.merged == true }}
         run: echo "The pull request was merged successfully."
 
       - name: 🔐 Trigger rsync LIVE webhook

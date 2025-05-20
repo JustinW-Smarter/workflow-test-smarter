@@ -1,0 +1,161 @@
+name: Test Security, Static Analysis & Deploy naar Test Server
+
+on:
+  pull_request:
+    branches:
+      - test
+    types:
+      - opened
+      - synchronize
+      - closed
+    paths-ignore:
+      - .github/workflows/develop.yml
+
+  push:
+    branches:
+      - test  # Trigger de deploy alleen wanneer er een push naar de test branch is (na merge)
+
+jobs:
+
+  test-deploy:
+    name: Deploy naar test server
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    environment: Testing
+
+    steps:
+      - name: Log PR merged status
+        run: |
+          echo "Testing & Deploying"
+          echo "Pull request merged: ${{ github.event.pull_request.merged }}"
+
+      - name: Check if PR was merged
+        if: ${{ github.event.pull_request.merged == true }}
+        run: echo "The pull request was merged successfully."
+
+      - name: 🔐 Trigger rsync LIVE webhook
+        id: trigger_live
+        if: ${{ github.event.pull_request.merged == true }}  # Alleen uitvoeren bij een push naar de test branch (na merge)
+        run: |
+          echo "⏳ Start LIVE rsync webhook call..."
+          RESPONSE=$(curl -s -X POST https://git-dev.smarter.nl/webhooks/deploy.php \
+            -H "Content-Type: application/json" \
+            -H "X-Smarter-Secret: ${{ secrets.WEBHOOK_SECRET_TEST }}" \
+            -d '{"ref": "refs/heads/test"}')
+          echo "$RESPONSE"
+          echo "live_response=$RESPONSE" >> $GITHUB_OUTPUT
+
+      - name: 📤 Toon rsync response
+        run: |
+          echo "---- RSYNC LIVE OUTPUT ----"
+          echo '${{ steps.trigger_live.outputs.live_response }}'
+
+      - name: 📥 Download server log (deploy.log)
+        run: |
+          echo "⬇️ Downloaden van deploy.log..."
+          curl -s https://git-dev.smarter.nl/webhook-rsync/webhooks/deploy.log -o deploy.log
+          echo "✅ Logbestand gedownload. Inhoud:"
+          cat deploy.log
+
+      - name: 📦 Upload logbestand als artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-rsync-log
+          path: deploy.log
+
+  OWASP-ZAP: # SQL-injection, XSS, Path traversal
+    name: Run OWASP ZAP Scan (XSS, SQLi, etc)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Run OWASP ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.12.0
+        with:
+          target: 'https://git-dev.smarter.nl'
+          fail_action: false
+          cmd_options: |
+            - '-a'
+            - '-t 120'
+
+  Nuclei:
+    name: Run Nuclei Scan (kwetsbaarheden)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare targets file
+        run: echo "https://git-dev.smarter.nl" > targets.txt
+
+      - name: Create output folder
+        run: mkdir -p output
+
+      - name: Run Nuclei scan
+        run: | #waarom in /app/?
+          docker run --rm -v $PWD:/app projectdiscovery/nuclei:latest \
+            -update-templates \
+            -l /app/targets.txt \
+            -o /app/output/nuclei-report.txt \
+            -severity high,critical \
+            -silent
+
+      - name: Show report if exists
+        run: |
+          if [ -f output/nuclei-report.txt ]; then
+            echo "✅ Kwetsbaarheden gevonden:"
+            cat output/nuclei-report.txt
+          else
+            echo "✅ Geen kwetsbaarheden gevonden. Geen report gegenereerd."
+            touch output/nuclei-report.txt
+          fi
+
+      - name: Upload Nuclei report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuclei-report
+          path: output/nuclei-report.txt
+
+  Nmap:
+    name: Nmap Scan (Open poorten, services)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    steps:
+      - name: Install Nmap
+        run: sudo apt-get update && sudo apt-get install -y nmap
+
+      - name: Run Nmap
+        run: |
+          nmap -Pn -sV -oN nmap-report.txt git-dev.smarter.nl
+
+      - name: Upload Nmap report
+        uses: actions/upload-artifact@v4
+        with:
+          name: nmap-report
+          path: nmap-report.txt
+
+  sync-test-to-development:
+    name: Sync test naar development (merge)
+    runs-on: ubuntu-latest
+    needs: [test-deploy]
+    if: ${{ github.event.pull_request.merged == true }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge test naar development
+        run: |
+          git fetch origin
+          git checkout development
+          git merge origin/test --no-ff --no-edit || {
+            echo "❌ Merge mislukt, handmatig oplossen nodig.";
+            exit 1;
+          }
+          git push origin development

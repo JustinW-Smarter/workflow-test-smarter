@@ -401,7 +401,7 @@ jobs:
         run: |
           git fetch origin
           git checkout ${{ github.ref_name }}
-          git rebase origin/development
+          git merge origin/development
 
       - name: Merge naar development
         if: success()
